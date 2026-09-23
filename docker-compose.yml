@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: importify-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-importify}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-importify}
+      POSTGRES_DB: ${POSTGRES_DB:-importify}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-importify}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - importify-net
+
+volumes:
+  pgdata:
+
+networks:
+  importify-net:
+    name: importify-net

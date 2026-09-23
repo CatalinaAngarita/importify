@@ -1,0 +1,20 @@
+{
+  "connections": {
+    "importify-local": {
+      "provider": "postgresql",
+      "driver": "postgres-jdbc",
+      "name": "importify-local",
+      "save-password": true,
+      "host": "localhost",
+      "port": "5432",
+      "database": "importify",
+      "user": "importify",
+      "password": "123",
+      "url": "jdbc:postgresql://localhost:5432/importify",
+      "settings": {
+        "showSystemObjects": false,
+        "showUtilityObjects": false
+      }
+    }
+  }
+}

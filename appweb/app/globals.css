@@ -1,0 +1,14 @@
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #111; }
+.container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #eee; }
+.brand { font-weight: 800; letter-spacing: 0.05em; text-decoration: none; color: #111; }
+.nav { display: flex; gap: 1rem; }
+.nav a { text-decoration: none; color: #333; }
+.hero { padding: 2rem 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.card { border: 1px solid #eee; border-radius: 12px; padding: 1rem; }
+.muted { color: #666; }
+.price { font-weight: 700; }
+.footer { border-top: 1px solid #eee; padding: 1.5rem; text-align: center; color: #666; }
