@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790124294462,
+      "tag": "0000_legal_nick_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790124645239,
+      "tag": "0001_add-refresh-token",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790174195813,
+      "tag": "0002_cultured_moira_mactaggert",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790179197204,
+      "tag": "0003_skinny_barracuda",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790179491356,
+      "tag": "0004_famous_silverclaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790180139100,
+      "tag": "0005_grey_shadowcat",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+# Modo desarrollo: código montado en vivo + recarga automática.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# Los cambios en app/src y appweb/* se reflejan sin reconstruir imágenes.
+services:
+  app:
+    build:
+      context: ./app
+      target: build # etapa con dependencias completas (ts-node)
+    command: npm run start:dev # nodemon con polling: reinicia al guardar
+    volumes:
+      - ./app/src:/usr/src/app/src
+    environment:
+      TS_NODE_TRANSPILE_ONLY: "true" # reinicios rápidos (el typecheck va en CI/tests)
+
+  appweb:
+    build:
+      context: ./appweb
+      target: build # etapa con dependencias completas
+    command: npm run dev # Next dev: HMR en el navegador
+    volumes:
+      - ./appweb/app:/usr/src/appweb/app
+      - ./appweb/components:/usr/src/appweb/components
+      - ./appweb/services:/usr/src/appweb/services
+      - ./appweb/hooks:/usr/src/appweb/hooks
+      - ./appweb/types:/usr/src/appweb/types
+      - ./appweb/public:/usr/src/appweb/public
+      - ./appweb/next.config.mjs:/usr/src/appweb/next.config.mjs
+    environment:
+      WATCHPACK_POLLING: "true" # inotify no cruza a Windows: polling
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
