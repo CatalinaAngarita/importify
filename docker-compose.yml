@@ -19,6 +19,60 @@ services:
     networks:
       - importify-net
 
+  app:
+    build:
+      context: ./app
+    container_name: importify-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-importify}:${POSTGRES_PASSWORD:-importify}@db:5432/${POSTGRES_DB:-importify}
+      APP_PORT: ${APP_PORT:-3001}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-your-local-env}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      WOMPI_ENV: ${WOMPI_ENV:-sandbox}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
+      WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-}
+      WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
+    ports:
+      - "${APP_PORT:-3001}:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/api/health | grep -q ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - importify-net
+
+  appweb:
+    build:
+      context: ./appweb
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+    container_name: importify-appweb
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+    ports:
+      - "${APPWEB_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - importify-net
+
 volumes:
   pgdata:
 
