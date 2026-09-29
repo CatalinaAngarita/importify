@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ProductCard } from "@/components/ProductCard";
+import { BestSellersCarousel } from "@/components/BestSellersCarousel";
+import { FeaturedProductsShowcase } from "@/components/FeaturedProductsShowcase";
 import { TestimonialCard } from "@/components/TestimonialCard";
-import { BEST_SELLERS, FEATURED_PRODUCTS, TESTIMONIALS } from "@/services/catalog.mock";
+import { TESTIMONIALS } from "@/services/catalog.mock";
 
 const BENEFITS = [
   { icon: "truck", text: "Envíos disponibles\na toda Colombia" },
@@ -46,28 +46,12 @@ export default function HomePage() {
         ))}
       </section>
 
-      <section className="home-products">
-        <div className="home-products-heading">
-          <h2>CONOCE NUESTROS PRODUCTOS</h2>
-          <Link href="/productos" className="home-more">VER MÁS</Link>
-        </div>
-        <div className="grid">
-          {FEATURED_PRODUCTS.map((product) => <ProductCard key={product.slug} product={product} />)}
-        </div>
-      </section>
+      <FeaturedProductsShowcase />
 
-      <section className="home-products home-products-secondary">
-        <div className="home-products-heading">
-          <h2>LOS MÁS VENDIDOS</h2>
-          <Link href="/productos" className="home-more">VER MÁS</Link>
-        </div>
-        <div className="grid">
-          {BEST_SELLERS.map((product) => <ProductCard key={product.slug} product={product} />)}
-        </div>
-      </section>
+      <BestSellersCarousel />
 
       <section className="home-testimonials">
-        <h2>LO QUE DICEN NUESTROS CLIENTES</h2>
+        <h2>CLIENTES FELICES</h2>
         <div className="grid-3">
           {TESTIMONIALS.map((testimonial) => <TestimonialCard key={testimonial.name} testimonial={testimonial} />)}
         </div>

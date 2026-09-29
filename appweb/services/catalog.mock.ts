@@ -27,9 +27,10 @@ export const FEATURED_PRODUCTS = PRODUCTS.slice(0, 4);
 export const BEST_SELLERS = [...PRODUCTS].sort((a, b) => b.sold - a.sold).slice(0, 4);
 
 export const TESTIMONIALS: Testimonial[] = [
-  { name: "Carolina M. — Bogotá", text: "Llegó en 5 días, original y bien empacado. El pago con Wompi fue facilísimo.", rating: 5, avatar: "/images/testimonials/carolina-m.svg" },
-  { name: "Andrés R. — Medellín", text: "Precios justos para importados y soporte que responde. Volveré a comprar.", rating: 5, avatar: "/images/testimonials/andres-r.svg" },
-  { name: "Valentina T. — Cali", text: "El set facial superó mis expectativas. Diseño de la tienda 10/10.", rating: 4, avatar: "/images/testimonials/valentina-t.svg" },
+  { name: "Carlos M. (Bogotá)", text: "Pedí mi nueva laptop y un smartwatch con Importify y la verdad tenía algo de nervios al principio, ¡pero llegaron súper rápido y sellados! El ahorro fue brutal comparado con las tiendas de aquí. 100% recomendados.", rating: 4, avatar: "/images/testimonials/carlos-m.png" },
+  { name: "Ana P. (Medellín)", text: "Conseguí unas autopartes y gadgets tecnológicos para mi carro que estaban agotadísimos. Importify se encargó de traérmelos directo hasta la puerta de mi casa sin enredos. ¡Súper profesionales!", rating: 4, avatar: "/images/testimonials/ana-p.png" },
+  { name: "Javier L. (Cúcuta)", text: "Estaba buscando unos dispositivos de cuidado personal que no se consiguen fácil en Colombia y el equipo de Importify me ayudó con todo el proceso. ¡Llegaron en perfecto estado y la atención es excelente!", rating: 4, avatar: "/images/testimonials/javier-l.png" },
+  { name: "Sofia R. (Cali)", text: "Buscaba dispositivos de cuidado personal difíciles de conseguir. Me ayudaron con todo y llegaron perfectos.", rating: 4, avatar: "/images/testimonials/sofia-r.png" },
 ];
 
 export const BENEFITS = [
