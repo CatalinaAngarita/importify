@@ -43,12 +43,8 @@ a { color: inherit; }
   grid-template-rows: auto 1fr; align-items: start; column-gap: 2rem; row-gap: 4.3rem;
 }
 .brand { grid-column: 1; grid-row: 1; display: inline-flex; align-items: center; gap: 1rem; color: var(--accent); text-decoration: none; width: max-content; }
-.brand img { width: 4.5rem; height: 4.5rem; border-radius: 50%; object-fit: cover; }
-.brand-name { font-family: Arial, sans-serif; font-weight: 900; font-style: italic; letter-spacing: -0.09em; font-size: clamp(2.45rem, 4.15vw, 4.3rem); line-height: 0.8; transform: scaleX(1.16); transform-origin: left; }
-.brand-mark { position: relative; width: 5.8rem; height: 4.3rem; border: 0.45rem solid var(--accent); border-top: 0; border-radius: 0 0 1.1rem 1.1rem; transform: skewX(-18deg); }
-.brand-mark::before { content: ""; position: absolute; width: 2.35rem; height: 2.35rem; top: -1.05rem; left: 1.3rem; border: 0.38rem solid var(--accent); border-radius: .45rem; transform: rotate(30deg); }
-.brand-mark::after { content: ""; position: absolute; width: .85rem; height: .85rem; background: var(--accent); border-radius: 50%; bottom: -1.5rem; left: .5rem; box-shadow: 3rem 0 0 var(--accent); }
-.brand-mark span { position: absolute; width: .38rem; height: 2.9rem; left: 2.37rem; top: -.45rem; background: var(--accent); transform: rotate(30deg); z-index: 1; }
+.brand img { object-fit: contain; }
+.brand-logo { width: min(100%, 40rem); height: auto; }
 .search { grid-column: 2; grid-row: 1; position: relative; min-width: 180px; display: flex; align-items: center; }
 .search input {
   width: 100%; padding: 1.25rem 1.8rem 1.25rem 6rem; border: none; border-radius: 999px;
@@ -62,16 +58,14 @@ a { color: inherit; }
 .nav a:hover, .nav a.active { background: var(--primary-light); }
 .nav .login-link { background: var(--primary); color: #fff; }
 .nav .login-link:hover { background: #6478ec; }
-.cart-link { grid-column: 3; grid-row: 1; justify-self: center; position: relative; min-width: 5.5rem; min-height: 4rem; display: inline-flex; align-items: center; justify-content: center; padding: 0 !important; background: transparent !important; }
-.cart-icon { position: relative; width: 3rem; height: 2.1rem; border: .26rem solid var(--dark); border-top: 0; border-radius: 0 0 .45rem .45rem; transform: skewX(10deg); }
-.cart-icon::before { content: ""; position: absolute; width: 1.05rem; height: .25rem; background: var(--dark); top: -.35rem; left: -1.1rem; transform: rotate(20deg); border-radius: 2px; }
-.cart-icon::after { content: "•  •"; position: absolute; letter-spacing: .6rem; font-size: 1.8rem; line-height: .3; left: .08rem; bottom: -1.2rem; transform: skewX(-10deg); }
+.cart-link { grid-column: 3; grid-row: 1; justify-self: center; position: relative; display: inline-flex; align-items: center; justify-content: center; padding: 0; background: transparent; }
+.cart-icon-img { width: 2.75rem; height: auto; display: block; }
 .cart-count {
-  position: absolute; top: -.6rem; right: .45rem;
+  position: absolute; top: -0.35rem; right: -0.35rem;
   background: var(--dark); color: #fff;
-  font-size: .9rem; font-weight: 700;
-  min-width: 1.85rem; height: 1.85rem; border-radius: 999px;
-  display: flex; align-items: center; justify-content: center; padding: 0 5px;
+  font-size: 0.75rem; font-weight: 700;
+  min-width: 1.5rem; height: 1.5rem; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; padding: 0 4px;
 }
 .btn {
   display: inline-block; text-decoration: none; cursor: pointer; border: none;
@@ -420,8 +414,7 @@ a { color: inherit; }
 
 @media (max-width: 720px) {
   .header-inner { min-height: 0; padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; }
-  .brand-name { font-size: 2rem; }
-  .brand-mark { transform: scale(.55) skewX(-18deg); transform-origin: left center; width: 3rem; margin-right: -2.6rem; }
+  .brand-logo { width: min(90vw, 30rem); }
   .search { order: 3; width: 100%; }
   .search input { padding: .9rem 1rem .9rem 3.7rem; font-size: 1rem; }
   .search-icon { left: 1.2rem; width: 1.4rem; height: 1.4rem; }

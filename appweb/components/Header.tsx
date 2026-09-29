@@ -21,8 +21,7 @@ export function Header() {
     <header className="header">
       <div className="header-inner">
         <Link href="/" className="brand" aria-label="Importify - inicio">
-          <Image src="/images/brand/logo-header.svg" alt="Importify" width={72} height={72} priority />
-          <span className="brand-name">IMPORTIFY</span>
+          <Image className="brand-logo" src="/images/brand/logo-superior.svg" alt="Importify" width={600} height={120} priority />
         </Link>
         <form
           className="search"
@@ -43,7 +42,7 @@ export function Header() {
           <Link href="/login" className="login-link">Iniciar sesión</Link>
         </nav>
         <Link href="/carrito" className="cart-link" aria-label="Carrito">
-          <span className="cart-icon" aria-hidden="true" />
+          <Image className="cart-icon-img" src="/images/brand/cart-icon.svg" alt="Carrito" width={44} height={41} priority />
           <span className="cart-count">{CART_COUNT}</span>
         </Link>
       </div>

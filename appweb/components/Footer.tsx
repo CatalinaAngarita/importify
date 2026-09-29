@@ -32,7 +32,7 @@ export function Footer() {
         </div>
 
         <div className="footer-brand-area">
-          <Image className="footer-brand-logo" src="/images/banners/logo-footer.svg" alt="Importify" width={320} height={40} />
+          <Image className="footer-brand-logo" src="/images/banners/logo-footer.svg" alt="Importify" width={320} height={30} />
           <nav className="footer-legal" aria-label="Enlaces legales">
             <a href="/terminos-y-condiciones">Términos y condiciones</a>
             <a href="/tratamiento-de-datos">Tratamiento de datos</a>
