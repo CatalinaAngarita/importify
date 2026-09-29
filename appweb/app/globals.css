@@ -47,12 +47,11 @@ a { color: inherit; }
 .brand-logo { width: min(100%, 40rem); height: auto; }
 .search { grid-column: 2; grid-row: 1; position: relative; min-width: 180px; display: flex; align-items: center; }
 .search input {
-  width: 100%; padding: 1.25rem 1.8rem 1.25rem 6rem; border: none; border-radius: 999px;
+  width: 100%; padding: 1.25rem 1.8rem 1.25rem 5rem; border: none; border-radius: 999px;
   outline: none; font: inherit; font-size: clamp(1rem, 1.7vw, 1.7rem); color: var(--ink); background: #fff;
 }
 .search input::placeholder { color: #d7d5df; }
-.search-icon { position: absolute; left: 2rem; width: 2.3rem; height: 2.3rem; border: .22rem solid var(--dark); border-radius: 50%; z-index: 1; }
-.search-icon::after { content: ""; position: absolute; width: 1.35rem; height: .22rem; bottom: -.55rem; left: -.72rem; background: var(--dark); transform: rotate(-48deg); border-radius: 2px; }
+.search-icon-svg { position: absolute; left: 1.5rem; width: 2.2rem; height: 2.2rem; color: var(--muted); pointer-events: none; }
 .nav { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 1fr 1.45fr 1.55fr 1.1fr auto; gap: 3rem; align-items: center; }
 .nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 5.6rem; padding: 0 1.2rem; border-radius: 1.35rem; text-decoration: none; color: var(--ink); font-weight: 900; font-size: clamp(1.05rem, 1.55vw, 1.7rem); letter-spacing: .025em; text-transform: uppercase; white-space: nowrap; }
 .nav a:hover, .nav a.active { background: var(--primary-light); }
@@ -61,11 +60,11 @@ a { color: inherit; }
 .cart-link { grid-column: 3; grid-row: 1; justify-self: center; position: relative; display: inline-flex; align-items: center; justify-content: center; padding: 0; background: transparent; }
 .cart-icon-img { width: 4rem; height: auto; display: block; }
 .cart-count {
-  position: absolute; top: -0.35rem; right: -0.35rem;
+  position: absolute; top: 0.6rem; right: 1.1rem;
   background: var(--dark); color: #fff;
-  font-size: 0.75rem; font-weight: 700;
-  min-width: 1.5rem; height: 1.5rem; border-radius: 999px;
-  display: flex; align-items: center; justify-content: center; padding: 0 4px;
+  font-size: 0.7rem; font-weight: 700;
+  min-width: 1.3rem; height: 1.3rem; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; padding: 0 3px;
 }
 .btn {
   display: inline-block; text-decoration: none; cursor: pointer; border: none;
