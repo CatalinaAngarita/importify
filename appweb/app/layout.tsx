@@ -4,8 +4,9 @@ import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "IMPORTIFY — Productos importados",
+  title: "IMPORTIFY",
   description: "E-commerce de productos importados con pagos Wompi para Colombia.",
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

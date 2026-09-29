@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function Footer() {
   return (
     <footer className="footer" id="contacto">
@@ -30,7 +32,7 @@ export function Footer() {
         </div>
 
         <div className="footer-brand-area">
-          <span className="footer-brand" aria-label="Importify">IMPORTIFY</span>
+          <Image className="footer-brand-logo" src="/images/banners/logo-footer.svg" alt="Importify" width={320} height={40} />
           <nav className="footer-legal" aria-label="Enlaces legales">
             <a href="/terminos-y-condiciones">Términos y condiciones</a>
             <a href="/tratamiento-de-datos">Tratamiento de datos</a>

@@ -66,13 +66,6 @@ export default function ContactPage() {
           })}
         </div>
       </section>
-
-      <section className="contact-bottom">
-        <div><strong>¿QUIERES EMPRENDER<br />CON NOSOTROS?</strong><small>2026 IMPORTIFY TODOS LOS<br />DERECHOS RESERVADOS</small></div>
-        <div><strong>¡SÍGUENOS EN<br />NUESTRAS REDES!</strong><small>𝕏 &nbsp; ◉ &nbsp; ◌<br />@importify.co</small></div>
-        <div className="contact-bottom-brand">IMPORTIFY</div>
-        <div><small>Términos y condiciones<br />Tratamiento de datos</small></div>
-      </section>
     </main>
   );
 }

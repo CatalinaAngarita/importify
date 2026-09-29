@@ -43,6 +43,7 @@ a { color: inherit; }
   grid-template-rows: auto 1fr; align-items: start; column-gap: 2rem; row-gap: 4.3rem;
 }
 .brand { grid-column: 1; grid-row: 1; display: inline-flex; align-items: center; gap: 1rem; color: var(--accent); text-decoration: none; width: max-content; }
+.brand img { width: 4.5rem; height: 4.5rem; border-radius: 50%; object-fit: cover; }
 .brand-name { font-family: Arial, sans-serif; font-weight: 900; font-style: italic; letter-spacing: -0.09em; font-size: clamp(2.45rem, 4.15vw, 4.3rem); line-height: 0.8; transform: scaleX(1.16); transform-origin: left; }
 .brand-mark { position: relative; width: 5.8rem; height: 4.3rem; border: 0.45rem solid var(--accent); border-top: 0; border-radius: 0 0 1.1rem 1.1rem; transform: skewX(-18deg); }
 .brand-mark::before { content: ""; position: absolute; width: 2.35rem; height: 2.35rem; top: -1.05rem; left: 1.3rem; border: 0.38rem solid var(--accent); border-radius: .45rem; transform: rotate(30deg); }
@@ -219,7 +220,6 @@ a { color: inherit; }
 
 /* Contacto */
 .contact-page { background: #fff; }
-.contact-page + .footer { display: none; }
 .contact-hero { position: relative; min-height: 48rem; overflow: hidden; background: var(--bg); }
 .contact-content { position: relative; z-index: 2; max-width: 48rem; margin: 0 auto; padding: 5.4rem 1.5rem 6rem; }
 .contact-heading { color: var(--dark); text-align: center; }
@@ -397,7 +397,7 @@ a { color: inherit; }
   position: relative; z-index: 1; max-width: 1650px; min-height: 24.2rem; margin: 0 auto; padding: 5.25rem 2.1rem 3.4rem;
   display: grid; grid-template-columns: 1.1fr 1fr 1.05fr; gap: 2rem; align-items: start;
 }
-.footer h2 { margin: 0; color: #fff; font-size: clamp(1.05rem, 1.55vw, 1.65rem); line-height: 1.23; letter-spacing: .02em; font-weight: 900; }
+.footer h2 { margin: 0; color: #fff; font-family: "Days One", "Arial Black", sans-serif; font-size: clamp(1.05rem, 1.55vw, 1.65rem); line-height: 1.23; letter-spacing: .02em; font-weight: 400; }
 .footer-join { display: flex; min-height: 15.5rem; flex-direction: column; justify-content: space-between; }
 .footer-join p { margin: 0; font-size: clamp(.7rem, 1.2vw, 1.1rem); line-height: 1.35; }
 .footer-social { text-align: center; }
@@ -407,6 +407,7 @@ a { color: inherit; }
 .footer-handle { display: inline-block; margin-top: 1.05rem; color: #fff; font-size: clamp(.92rem, 1.65vw, 1.55rem); text-decoration: none; }
 .footer-brand-area { display: flex; min-height: 15.5rem; flex-direction: column; align-items: flex-end; justify-content: space-between; }
 .footer-brand { color: #fff; font-family: Arial, sans-serif; font-size: clamp(1.8rem, 3vw, 3.65rem); font-style: italic; font-weight: 900; letter-spacing: -.1em; line-height: .8; transform: scaleX(1.13); transform-origin: right; }
+.footer-brand-logo { width: min(100%, 20rem); height: auto; align-self: flex-end; }
 .footer-legal { display: grid; gap: .85rem; text-align: right; }
 .footer-legal a { color: #fff; font-size: clamp(.85rem, 1.65vw, 1.5rem); line-height: 1.15; text-decoration: none; }
 .footer a:hover { text-decoration: underline; }

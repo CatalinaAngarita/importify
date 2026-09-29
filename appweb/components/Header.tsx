@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -19,10 +20,8 @@ export function Header() {
   return (
     <header className="header">
       <div className="header-inner">
-        <Link href="/" className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <span />
-          </span>
+        <Link href="/" className="brand" aria-label="Importify - inicio">
+          <Image src="/images/brand/logo-header.svg" alt="Importify" width={72} height={72} priority />
           <span className="brand-name">IMPORTIFY</span>
         </Link>
         <form
