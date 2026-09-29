@@ -40,7 +40,7 @@ a { color: inherit; }
 .header-inner {
   max-width: 1660px; min-height: 345px; margin: 0 auto; padding: 4.8rem 1.5rem 2.4rem;
   display: grid; grid-template-columns: minmax(390px, 1fr) minmax(430px, 1.25fr) auto;
-  grid-template-rows: auto 1fr; align-items: start; column-gap: 2rem; row-gap: 4.3rem;
+  grid-template-rows: auto 1fr; align-items: center; column-gap: 2rem; row-gap: 4.3rem;
 }
 .brand { grid-column: 1; grid-row: 1; display: inline-flex; align-items: center; gap: 1rem; color: var(--accent); text-decoration: none; width: max-content; }
 .brand img { object-fit: contain; }
@@ -59,7 +59,7 @@ a { color: inherit; }
 .nav .login-link { background: var(--primary); color: #fff; }
 .nav .login-link:hover { background: #6478ec; }
 .cart-link { grid-column: 3; grid-row: 1; justify-self: center; position: relative; display: inline-flex; align-items: center; justify-content: center; padding: 0; background: transparent; }
-.cart-icon-img { width: 2.75rem; height: auto; display: block; }
+.cart-icon-img { width: 4rem; height: auto; display: block; }
 .cart-count {
   position: absolute; top: -0.35rem; right: -0.35rem;
   background: var(--dark); color: #fff;
