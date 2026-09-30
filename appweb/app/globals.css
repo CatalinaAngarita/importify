@@ -17,13 +17,17 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
 body {
   margin: 0;
   font-family: "Montserrat", "Avenir Next", "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--ink);
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
+body::-webkit-scrollbar { display: none; }
 a { color: inherit; }
 
 .container { max-width: 1140px; margin: 0 auto; padding: 1.5rem; }
@@ -63,8 +67,8 @@ a { color: inherit; }
 .cart-icon-img { width: 4rem; height: auto; display: block; }
 .cart-count {
   position: absolute;
-  top: 0.87rem;
-  right: 0.87rem;
+  top: -0.05rem;
+  right: -0.05rem;
   width: 1.74rem;
   height: 1.74rem;
   display: flex;
