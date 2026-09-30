@@ -49,7 +49,8 @@ a { color: inherit; }
 .search-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .search input {
   width: 100%; padding: 1.25rem 2rem 1.25rem 5rem; border: none; border-radius: 78px;
-  outline: none; font: inherit; font-size: clamp(1rem, 1.7vw, 1.7rem); color: var(--ink); background: transparent;
+  outline: none; font-family: var(--font-plus-jakarta), "Montserrat", "Avenir Next", "Segoe UI", sans-serif;
+  font-size: clamp(1rem, 1.7vw, 1.7rem); color: var(--ink); background: transparent;
 }
 .search input::placeholder { color: var(--muted); }
 .nav { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 1fr 1.45fr 1.55fr 1.1fr auto; gap: 3rem; align-items: center; }
