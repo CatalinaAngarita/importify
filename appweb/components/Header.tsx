@@ -30,7 +30,7 @@ export function Header() {
             if (!query.trim()) e.preventDefault();
           }}
         >
-          <Image className="search-icon-svg" src="/images/brand/barra-busqueda-lupa.svg" alt="" aria-hidden="true" width={32} height={32} />
+          <Image className="search-bg" src="/images/brand/barra-busqueda-lupa.svg" alt="" aria-hidden="true" fill priority />
           <input name="q" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Escribe el producto..." aria-label="Buscar productos" />
         </form>
         <nav className="nav">

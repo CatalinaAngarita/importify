@@ -46,12 +46,12 @@ a { color: inherit; }
 .brand img { object-fit: contain; }
 .brand-logo { width: min(100%, 40rem); height: auto; }
 .search { grid-column: 2; grid-row: 1; position: relative; min-width: 180px; display: flex; align-items: center; }
+.search-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .search input {
-  width: 100%; padding: 1.25rem 1.8rem 1.25rem 5rem; border: none; border-radius: 999px;
-  outline: none; font: inherit; font-size: clamp(1rem, 1.7vw, 1.7rem); color: var(--ink); background: #fff;
+  width: 100%; padding: 1.25rem 2rem 1.25rem 5rem; border: none; border-radius: 78px;
+  outline: none; font: inherit; font-size: clamp(1rem, 1.7vw, 1.7rem); color: var(--ink); background: transparent;
 }
-.search input::placeholder { color: #d7d5df; }
-.search-icon-svg { position: absolute; left: 1.5rem; width: 2.2rem; height: 2.2rem; color: var(--muted); pointer-events: none; }
+.search input::placeholder { color: var(--muted); }
 .nav { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: 1fr 1.45fr 1.55fr 1.1fr auto; gap: 3rem; align-items: center; }
 .nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 5.6rem; padding: 0 1.2rem; border-radius: 1.35rem; text-decoration: none; color: var(--ink); font-weight: 900; font-size: clamp(1.05rem, 1.55vw, 1.7rem); letter-spacing: .025em; text-transform: uppercase; white-space: nowrap; }
 .nav a:hover, .nav a.active { background: var(--primary-light); }
