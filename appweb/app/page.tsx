@@ -34,7 +34,9 @@ export default function HomePage() {
       </section>
 
       <div className="home-marquee" aria-label="Beneficios principales">
-        <span>GARANTÍA 15 DÍAS</span><b>•</b><span>ENVÍOS A TODA COLOMBIA</span><b>•</b><span>IMPORTADORES DIRECTOS</span>
+        <span>GARANTÍA 15 DÍAS</span><b>•</b><span>ENVÍOS A TODA COLOMBIA</span><b>•</b><span>IMPORTADORES DIRECTOS</span><b>•</b>
+        <span aria-hidden="true">GARANTÍA 15 DÍAS</span><b aria-hidden="true">•</b><span aria-hidden="true">ENVÍOS A TODA COLOMBIA</span><b aria-hidden="true">•</b><span aria-hidden="true">IMPORTADORES DIRECTOS</span><b aria-hidden="true">•</b>
+        <span aria-hidden="true">GARANTÍA 15 DÍAS</span><b aria-hidden="true">•</b><span aria-hidden="true">ENVÍOS A TODA COLOMBIA</span><b aria-hidden="true">•</b><span aria-hidden="true">IMPORTADORES DIRECTOS</span>
       </div>
 
       <section className="home-benefits" aria-label="Ventajas de comprar en Importify">

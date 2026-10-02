@@ -1,0 +1,30 @@
+import type { Product } from "@/types/catalog";
+
+// Datos extraídos del catálogo BCH PERFUMERÍA 2026 (Canva).
+// Nombres y precios exactos del catálogo; imágenes recortadas de las páginas del mismo.
+// Pendientes por extraer: Televentas, Sokany, Belleza, Tecnología, Eléctricos,
+// Repuestos Eléctricos, Juguetería, Herramientas, Mascotas.
+export const CATALOG: Record<string, Product[]> = {
+  perfumeria: [
+    { slug: "odyssey-litchi-lush", name: "Odyssey Litchi Lush", category: "perfumeria", price: 87500, emoji: "🌸", image: "/images/products/perfumeria/odyssey-litchi-lush.png", rating: 0, sold: 0 },
+    { slug: "odyssey-mega", name: "Odyssey Mega", category: "perfumeria", price: 90000, emoji: "🌸", image: "/images/products/perfumeria/odyssey-mega.png", rating: 0, sold: 0 },
+    { slug: "odyssey-homne", name: "Odyssey Homne", category: "perfumeria", price: 75000, emoji: "🌸", image: "/images/products/perfumeria/odyssey-homne.png", rating: 0, sold: 0 },
+    { slug: "odyssey-tyrant", name: "Odyssey Tyrant", category: "perfumeria", price: 75000, emoji: "🌸", image: "/images/products/perfumeria/odyssey-tyrant.png", rating: 0, sold: 0 },
+    { slug: "odyssey-spectra", name: "Odyssey Spectra", category: "perfumeria", price: 75000, emoji: "🌸", image: "/images/products/perfumeria/odyssey-spectra.png", rating: 0, sold: 0 },
+    { slug: "odyssey-go-mango", name: "Odyssey Go Mango", category: "perfumeria", price: 87500, emoji: "🌸", image: "/images/products/perfumeria/odyssey-go-mango.png", rating: 0, sold: 0 },
+    { slug: "odyssey-mandarin-sky", name: "Odyssey Mandarin Sky", category: "perfumeria", price: 87500, emoji: "🌸", image: "/images/products/perfumeria/odyssey-mandarin-sky.png", rating: 0, sold: 0 },
+    { slug: "odyssey-limoni", name: "Odyssey Limoni", category: "perfumeria", price: 80000, emoji: "🌸", image: "/images/products/perfumeria/odyssey-limoni.png", rating: 0, sold: 0 },
+    { slug: "corvus", name: "Corvus", category: "perfumeria", price: 45000, emoji: "🌸", image: "/images/products/perfumeria/corvus.png", rating: 0, sold: 0 },
+    { slug: "pegasus", name: "Pegasus", category: "perfumeria", price: 50000, emoji: "🌸", image: "/images/products/perfumeria/pegasus.png", rating: 0, sold: 0 },
+    { slug: "vega", name: "Vega", category: "perfumeria", price: 45000, emoji: "🌸", image: "/images/products/perfumeria/vega.png", rating: 0, sold: 0 },
+    { slug: "aqua-dubai", name: "Aqua Dubai", category: "perfumeria", price: 85000, emoji: "🌸", image: "/images/products/perfumeria/aqua-dubai.png", rating: 0, sold: 0 },
+    { slug: "amber-oud", name: "Amber Oud", category: "perfumeria", price: 50000, emoji: "🌸", image: "/images/products/perfumeria/amber-oud.png", rating: 0, sold: 0 },
+    { slug: "ultra-violet", name: "Ultra Violet", category: "perfumeria", price: 90000, emoji: "🌸", image: "/images/products/perfumeria/ultra-violet.png", rating: 0, sold: 0 },
+    { slug: "amber-oud-private", name: "Amber Oud Private", category: "perfumeria", price: 60000, emoji: "🌸", image: "/images/products/perfumeria/amber-oud-private.png", rating: 0, sold: 0 },
+    { slug: "bharara-blue", name: "Bharara Blue", category: "perfumeria", price: 75000, emoji: "🌸", image: "/images/products/perfumeria/bharara-blue.png", rating: 0, sold: 0 },
+    { slug: "bharara-king", name: "Bharara King", category: "perfumeria", price: 90000, emoji: "🌸", image: "/images/products/perfumeria/bharara-king.png", rating: 0, sold: 0 },
+    { slug: "niche-femme", name: "Niche Femme", category: "perfumeria", price: 90000, emoji: "🌸", image: "/images/products/perfumeria/niche-femme.png", rating: 0, sold: 0 },
+    { slug: "sckarlet", name: "Sckarlet", category: "perfumeria", price: 90000, emoji: "🌸", image: "/images/products/perfumeria/sckarlet.png", rating: 0, sold: 0 },
+    { slug: "viking-dubai", name: "Viking Dubai", category: "perfumeria", price: 60000, emoji: "🌸", image: "/images/products/perfumeria/viking-dubai.png", rating: 0, sold: 0 },
+  ],
+};

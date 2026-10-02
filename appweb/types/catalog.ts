@@ -2,7 +2,17 @@ export type CategorySlug =
   | "technology"
   | "automotive"
   | "accessories"
-  | "personal-care";
+  | "personal-care"
+  | "perfumeria"
+  | "televentas"
+  | "sokany"
+  | "belleza"
+  | "tecnologia"
+  | "electricos"
+  | "repuestos-electricos"
+  | "jugueteria"
+  | "herramientas"
+  | "mascotas";
 
 export interface Category {
   slug: CategorySlug;

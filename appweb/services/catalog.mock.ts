@@ -1,10 +1,16 @@
 import type { Category, Product, Testimonial } from "@/types/catalog";
 
 export const CATEGORIES: Category[] = [
-  { slug: "technology", name: "Tecnología", emoji: "💻", blurb: "Gadgets y audio importado", image: "/images/categories/technology.svg" },
-  { slug: "automotive", name: "Automotriz", emoji: "🚗", blurb: "Cuidado y accesorios auto", image: "/images/categories/automotive.svg" },
-  { slug: "accessories", name: "Accesorios", emoji: "🎒", blurb: "Estilo y uso diario", image: "/images/categories/accessories.svg" },
-  { slug: "personal-care", name: "Cuidado personal", emoji: "🧴", blurb: "Belleza y bienestar", image: "/images/categories/personal-care.svg" },
+  { slug: "perfumeria", name: "Perfumería", emoji: "🌸", blurb: "Perfumes y fragancias importadas", image: "/images/categories/perfumeria.svg" },
+  { slug: "televentas", name: "Televentas", emoji: "📺", blurb: "Los productos que ves en TV", image: "/images/categories/televentas.svg" },
+  { slug: "sokany", name: "Sokany", emoji: "🔊", blurb: "Línea Sokany original", image: "/images/categories/sokany.svg" },
+  { slug: "belleza", name: "Belleza", emoji: "💄", blurb: "Cuidado y belleza", image: "/images/categories/belleza.svg" },
+  { slug: "tecnologia", name: "Tecnología", emoji: "💻", blurb: "Gadgets y audio importado", image: "/images/categories/tecnologia.svg" },
+  { slug: "electricos", name: "Eléctricos", emoji: "🔌", blurb: "Electrodomésticos para tu hogar", image: "/images/categories/electricos.svg" },
+  { slug: "repuestos-electricos", name: "Repuestos Eléctricos", emoji: "⚡", blurb: "Repuestos y accesorios eléctricos", image: "/images/categories/repuestos-electricos.svg" },
+  { slug: "jugueteria", name: "Juguetería", emoji: "🧸", blurb: "Juguetes para todas las edades", image: "/images/categories/jugueteria.svg" },
+  { slug: "herramientas", name: "Herramientas", emoji: "🛠️", blurb: "Herramientas y taller", image: "/images/categories/herramientas.svg" },
+  { slug: "mascotas", name: "Mascotas", emoji: "🐾", blurb: "Todo para tu peludito", image: "/images/categories/mascotas.svg" },
 ];
 
 // Pool único: cada producto aparece una sola vez; las secciones usan slices.
