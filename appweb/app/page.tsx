@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BestSellersCarousel } from "@/components/BestSellersCarousel";
 import { FeaturedProductsShowcase } from "@/components/FeaturedProductsShowcase";
 import { TestimonialCard } from "@/components/TestimonialCard";
@@ -19,24 +20,29 @@ export default function HomePage() {
   return (
     <main className="home-page">
       <section className="home-showcase" aria-label="Categorías de Importify">
-        <article className="showcase-card showcase-care">
-          <div className="showcase-copy"><h1>CUIDADOS PARA TU PIEL</h1></div>
+        <Link href="/productos?category=belleza" className="showcase-card showcase-care" style={{ textDecoration: 'none' }}>
+          <div className="showcase-copy"><h1>BELLEZA</h1></div>
           <div className="showcase-image" aria-hidden="true" />
-        </article>
-        <article className="showcase-card showcase-auto">
-          <div className="showcase-copy"><h2>VARIEDAD DE<br />AUTOPARTES</h2></div>
+        </Link>
+        <Link href="/productos?category=tecnologia" className="showcase-card showcase-auto" style={{ textDecoration: 'none' }}>
+          <div className="showcase-copy"><h2>TECNOLÓGICOS</h2></div>
           <div className="showcase-image" aria-hidden="true" />
-        </article>
-        <article className="showcase-card showcase-accessories">
-          <div className="showcase-copy"><h2>VARIEDAD DE<br />ACCESORIOS</h2></div>
+        </Link>
+        <Link href="/productos?category=electricos" className="showcase-card showcase-accessories" style={{ textDecoration: 'none' }}>
+          <div className="showcase-copy"><h2>ELÉCTRICOS</h2></div>
           <div className="showcase-image" aria-hidden="true" />
-        </article>
+        </Link>
       </section>
 
       <div className="home-marquee" aria-label="Beneficios principales">
-        <span>GARANTÍA 15 DÍAS</span><b>•</b><span>ENVÍOS A TODA COLOMBIA</span><b>•</b><span>IMPORTADORES DIRECTOS</span><b>•</b>
-        <span aria-hidden="true">GARANTÍA 15 DÍAS</span><b aria-hidden="true">•</b><span aria-hidden="true">ENVÍOS A TODA COLOMBIA</span><b aria-hidden="true">•</b><span aria-hidden="true">IMPORTADORES DIRECTOS</span><b aria-hidden="true">•</b>
-        <span aria-hidden="true">GARANTÍA 15 DÍAS</span><b aria-hidden="true">•</b><span aria-hidden="true">ENVÍOS A TODA COLOMBIA</span><b aria-hidden="true">•</b><span aria-hidden="true">IMPORTADORES DIRECTOS</span>
+        <div className="home-marquee-track">
+          <span>GARANTÍA 15 DÍAS</span><b>•</b><span>ENVÍOS A TODA COLOMBIA</span><b>•</b><span>IMPORTADORES DIRECTOS</span><b>•</b>
+          <span aria-hidden="true">GARANTÍA 15 DÍAS</span><b aria-hidden="true">•</b><span aria-hidden="true">ENVÍOS A TODA COLOMBIA</span><b aria-hidden="true">•</b><span aria-hidden="true">IMPORTADORES DIRECTOS</span><b aria-hidden="true">•</b>
+        </div>
+        <div className="home-marquee-track" aria-hidden="true">
+          <span>GARANTÍA 15 DÍAS</span><b>•</b><span>ENVÍOS A TODA COLOMBIA</span><b>•</b><span>IMPORTADORES DIRECTOS</span><b>•</b>
+          <span>GARANTÍA 15 DÍAS</span><b>•</b><span>ENVÍOS A TODA COLOMBIA</span><b>•</b><span>IMPORTADORES DIRECTOS</span><b>•</b>
+        </div>
       </div>
 
       <section className="home-benefits" aria-label="Ventajas de comprar en Importify">

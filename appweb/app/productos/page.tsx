@@ -24,8 +24,22 @@ type SortValue = (typeof SORTS)[number]["value"];
 
 const POOL: Product[] = [...PRODUCTS, ...Object.values(CATALOG).flat()];
 
+// Slugs en inglés del mock que no están en CATEGORIES: se traducen para mostrarlos bien.
+  const EXTRA_CATEGORY_LABELS: Record<string, string> = {
+    technology: "Tecnológicos",
+    tecnologia: "Tecnológicos",
+    "personal-care": "Cuidado personal",
+    accessories: "Accesorios",
+    automotive: "Autopartes",
+    home: "Hogar",
+  };
+
 function categoryLabel(slug: string): string {
-  return CATEGORIES.find((c) => c.slug === slug)?.name ?? slug.replace(/-/g, " ");
+  return (
+    CATEGORIES.find((c) => c.slug === slug)?.name ??
+    EXTRA_CATEGORY_LABELS[slug] ??
+    slug.replace(/-/g, " ")
+  );
 }
 
 function discountOf(p: Product): number | null {
@@ -47,11 +61,14 @@ function Catalogo() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
 
-  // Toda la lista de categorías presentes en el catálogo.
+  // Lista completa de categorías para filtros sidebar.
   const allCats = useMemo(
-    () => Array.from(new Set(POOL.map((p) => p.category))),
+    () => CATEGORIES.map((c) => c.slug),
     []
   );
+
+  // Categorías visibles en pills (7 principales + "todos").
+  const pillCats = ["perfumeria", "televentas", "belleza", "tecnologia", "electricos", "mascotas"];
 
   // Al cambiar cualquier criterio se vuelve a la primera página.
   useEffect(() => {
@@ -113,18 +130,33 @@ function Catalogo() {
       <div className="shop-wrap">
         {/* 2. Banner promocional horizontal */}
         <section className="shop-banner" aria-label="Promoción destacada">
-          <div className="shop-banner-figure" aria-hidden="true" />
-          <div className="shop-banner-text">
-            <p className="shop-banner-kicker">IMPORTIFY · IMPORTADOS ORIGINALES</p>
-            <h2>Hasta 30% OFF en tecnología seleccionada</h2>
-            <p className="shop-banner-sub">Envío a toda Colombia · Pago seguro con Wompi</p>
+          <div className="shop-banner-figure" aria-hidden="true">
+            <img
+              src="/images/banners/ofertas-repartidor.svg"
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "contain", transform: "scale(1.1) translateX(-1.5rem)", transformOrigin: "center" }}
+            />
           </div>
-          <div className="shop-banner-decor" aria-hidden="true" />
+          <div className="shop-banner-text">
+            <p className="shop-banner-kicker">APROVECHA NUESTRAS</p>
+            <h2>GRANDES OFERTAS</h2>
+            <p className="shop-banner-sub">
+              Descubre productos increíbles a precios especiales.<br />
+              ¡Promociones exclusivas para compras mayoristas!
+            </p>
+          </div>
+          <div className="shop-banner-decor" aria-hidden="true">
+            <img
+              src="/images/banners/ofertas-cajas.svg"
+              alt=""
+              style={{ height: "70%", objectFit: "contain", transform: "translateX(4rem)" }}
+            />
+          </div>
         </section>
 
         {/* 3. Filtro de categorías (pills) */}
         <nav className="shop-pills" aria-label="Filtrar por categoría">
-          {["todos", ...allCats].map((slug) => (
+          {["todos", ...pillCats].map((slug) => (
             <button
               key={slug}
               type="button"
@@ -140,7 +172,7 @@ function Catalogo() {
         {/* 4. Información del listado + ordenamiento */}
         <div className="shop-meta">
           <p>
-            Mostrando {visible.length} de {filtered.length} productos
+            Mostrando {visible.length} productos
             {query && (
               <>
                 {" "}para “<strong>{searchParams.get("q")}</strong>”
@@ -266,35 +298,20 @@ function Catalogo() {
               const d = discountOf(p);
               return (
                 <article className="shop-card" key={p.slug}>
-                  <p className="shop-card-cat">{categoryLabel(p.category)}</p>
-                  {p.category === "perfumeria" ? (
-                    <div className="shop-card-media shop-card-media-empty" aria-hidden="true" />
-                  ) : (
-                    <Link href={`/productos/${p.slug}`} className="shop-card-media" aria-label={p.name}>
-                      <Image
-                        src={p.image}
-                        alt={p.name}
-                        fill
-                        sizes="(max-width: 720px) 45vw, (max-width: 1100px) 30vw, 300px"
-                        style={{ objectFit: "contain" }}
-                      />
-                    </Link>
-                  )}
+                  <Link href={`/productos/${p.slug}`} className="shop-card-media" aria-label={p.name}>
+                    <Image
+                      src={p.image}
+                      alt={p.name}
+                      fill
+                      sizes="(max-width: 720px) 45vw, (max-width: 1100px) 30vw, 300px"
+                      style={{ objectFit: "contain" }}
+                    />
+                  </Link>
                   <h3 className="shop-card-name">
                     <Link href={`/productos/${p.slug}`}>{p.name}</Link>
                   </h3>
                   <div className="shop-card-foot">
-                    <div className="shop-card-info">
-                      <p className="shop-card-price">{formatCOP(p.price)}</p>
-                      <p className="shop-card-meta">
-                        {d !== null ? (
-                          <>-{d}% dcto · </>
-                        ) : (
-                          <>Sin dcto · </>
-                        )}
-                        Por unidad
-                      </p>
-                    </div>
+                    <p className="shop-card-price">{formatCOP(p.price)}</p>
                     <button
                       type="button"
                       className="shop-card-add"
@@ -306,6 +323,7 @@ function Catalogo() {
                       +
                     </button>
                   </div>
+                  <p className="shop-card-meta">{d !== null ? `-${d}% ` : ""}1 und</p>
                 </article>
               );
             })}
@@ -320,12 +338,14 @@ function Catalogo() {
           <nav className="shop-pagination" aria-label="Paginación de productos">
             <button
               type="button"
-              className="shop-page-btn"
+              className="shop-page-btn shop-page-arrow"
               onClick={() => setPage((v) => Math.max(1, v - 1))}
               disabled={current === 1}
               aria-label="Página anterior"
             >
-              ←
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" />
+              </svg>
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
               <button
@@ -340,12 +360,14 @@ function Catalogo() {
             ))}
             <button
               type="button"
-              className="shop-page-btn"
+              className="shop-page-btn shop-page-arrow"
               onClick={() => setPage((v) => Math.min(totalPages, v + 1))}
               disabled={current === totalPages}
               aria-label="Página siguiente"
             >
-              →
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 6l6 6-6 6" />
+              </svg>
             </button>
           </nav>
         )}

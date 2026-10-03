@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CATALOG } from "@/services/catalog.products";
 
 const PRODUCTS = [
-  { title: "MACBOOK PRO 14\"", description: "Laptop macbook pro 14” 2020.", image: "/images/featured-products/macbook-pro-14.png", className: "featured-product-laptop" },
-  { title: "SMART WATCH", description: "Smart Watch 2026.", image: "/images/featured-products/smart-watch.png", className: "featured-product-watch" },
-  { title: "BOCINA BAFLE", description: "Bafle integrado con IA 2026.", image: "/images/featured-products/bocina-bafle.png", className: "featured-product-speaker" },
+  { title: "Aro de Luz I8", description: "Aro de luz profesional para fotos y videos.", image: "/images/products/Tecnologicos/aro-luz-I8.png", className: "featured-product-tech" },
+  { title: "Audífonos Personales", description: "Audio nítido y comodidad todo el día.", image: "/images/products/Tecnologicos/audifonos-personales.png", className: "featured-product-tech" },
+  { title: "Malumeta v2", description: "Potente herramienta eléctrica versátil.", image: "/images/products/Eléctricos/Malumeta-v2.png", className: "featured-product-electric" },
+  { title: "Maumeta 3D", description: "Impresora 3D de alta precisión.", image: "/images/products/Eléctricos/Maumeta-3D.png", className: "featured-product-electric" },
+  { title: "Brocha y arancela de maquillaje", description: "Set profesional para maquillaje.", image: "/images/products/Belleza/Brocha y arancela de maquillaje.png", className: "featured-product-beauty" },
+  { title: "Depilador de dama", description: "Depilación suave y duradera.", image: "/images/products/Belleza/Depilador-de-dama.png", className: "featured-product-beauty" },
 ];
 
 export function FeaturedProductsShowcase({ showMore = true }: { showMore?: boolean }) {

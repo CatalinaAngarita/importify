@@ -37,6 +37,7 @@ export function Footer() {
             <a href="/terminos-y-condiciones">Términos y condiciones</a>
             <a href="/tratamiento-de-datos">Tratamiento de datos</a>
           </nav>
+          <Image className="footer-banner-logo" src="/images/banners/logo-banner-inferior.svg" alt="Importify" width={200} height={60} />
         </div>
       </div>
     </footer>

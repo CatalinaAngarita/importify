@@ -27,6 +27,16 @@ export const PRODUCTS: Product[] = [
   { slug: "set-facial-coreano", name: "Set facial coreano", category: "personal-care", price: 74900, emoji: "🧴", image: "/images/products/personal-care/set-facial-coreano.svg", rating: 4.9, sold: 450 },
   { slug: "secador-profesional", name: "Secador profesional", category: "personal-care", price: 139900, emoji: "💨", image: "/images/products/personal-care/secador-profesional.svg", rating: 4.7, sold: 230 },
   { slug: "kit-afeitado", name: "Kit afeitado clásico", category: "personal-care", price: 64900, emoji: "🪒", image: "/images/products/personal-care/kit-afeitado-clasico.svg", rating: 4.6, sold: 140 },
+  { slug: "brocha-arancela-maquillaje", name: "Brocha y arancela de maquillaje", category: "belleza", price: 45900, oldPrice: 59900, emoji: "🖌️", image: "/images/products/Belleza/Brocha y arancela de maquillaje.png", rating: 4.7, sold: 280 },
+  { slug: "cubre-pezon", name: "Cubre pezón", category: "belleza", price: 18900, oldPrice: 25900, emoji: "🩹", image: "/images/products/Belleza/cubre-pezon.png", rating: 4.5, sold: 420 },
+  { slug: "depilador-dama", name: "Depilador de dama", category: "belleza", price: 89900, oldPrice: 119900, emoji: "💃", image: "/images/products/Belleza/Depilador-de-dama.png", rating: 4.8, sold: 350 },
+  { slug: "maquina-hair-clipper", name: "Máquina Hair Clipper", category: "belleza", price: 129900, oldPrice: 169900, emoji: "✂️", image: "/images/products/Belleza/Maquina-Hair-Clipper.png", rating: 4.7, sold: 220 },
+  { slug: "maquina-metalica", name: "Máquina metálica", category: "belleza", price: 109900, oldPrice: 139900, emoji: "🔧", image: "/images/products/Belleza/Maquina-metalica.png", rating: 4.6, sold: 180 },
+  { slug: "maquina-umate", name: "Máquina Umate", category: "belleza", price: 149900, oldPrice: 189900, emoji: "💈", image: "/images/products/Belleza/Maquina-umate.png", rating: 4.7, sold: 150 },
+  { slug: "masajeador-facial", name: "Masajeador facial", category: "belleza", price: 69900, oldPrice: 89900, emoji: "💆", image: "/images/products/Belleza/masajeador-facial.png", rating: 4.8, sold: 310 },
+  { slug: "pulidora-drill", name: "Pulidora drill", category: "belleza", price: 59900, oldPrice: 79900, emoji: "✨", image: "/images/products/Belleza/Pulidora-drill.png", rating: 4.5, sold: 200 },
+  { slug: "quita-callo-portatil", name: "Quita callo portátil", category: "belleza", price: 35900, oldPrice: 45900, emoji: "🦶", image: "/images/products/Belleza/Quita-callo-portatil.png", rating: 4.6, sold: 380 },
+  { slug: "removedor-electrico-facial", name: "Removedor eléctrico facial", category: "belleza", price: 79900, oldPrice: 99900, emoji: "💡", image: "/images/products/Belleza/Removedor-electrico-facial.png", rating: 4.7, sold: 190 },
 ];
 
 export const FEATURED_PRODUCTS = PRODUCTS.slice(0, 4);

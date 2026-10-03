@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CART_COUNT } from "@/services/catalog.mock";
+import { useCart } from "@/context/CartContext";
 
 const LINKS = [
   { href: "/", label: "Inicio" },
@@ -16,6 +16,7 @@ const LINKS = [
 export function Header() {
   const [query, setQuery] = useState("");
   const pathname = usePathname();
+  const { count } = useCart();
 
   return (
     <header className="header">
@@ -42,8 +43,15 @@ export function Header() {
           <Link href="/login" className="login-link">Iniciar sesión</Link>
         </nav>
         <Link href="/carrito" className="cart-link" aria-label="Carrito">
-          <Image className="cart-icon-img" src="/images/brand/cart-icon.svg" alt="Carrito" width={44} height={41} priority />
-          <span className="cart-count">{CART_COUNT}</span>
+          <Image
+            className="cart-icon-img"
+            src="/images/brand/cart-icon.svg"
+            alt="Carrito"
+            width={44}
+            height={41}
+            priority
+          />
+          <span className="cart-count">{count}</span>
         </Link>
       </div>
     </header>
