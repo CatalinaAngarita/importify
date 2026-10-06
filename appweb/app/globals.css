@@ -1220,11 +1220,11 @@ a { color: inherit; }
 
 
 /* Fila de categor�as (pills) */
-.shop-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; }
+.shop-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; position: relative; z-index: 10; }
 .shop-pill {
   min-height: 3.4rem;
   padding: .8rem 2.5rem;
-  border: 0;
+  border: 2px solid #d4d1e8;
   border-radius: 999px;
   background: #E3E1F2;
   color: #200332;
@@ -1232,14 +1232,17 @@ a { color: inherit; }
   font-size: 1.2rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background .2s, color .2s;
+  transition: background .2s, color .2s, border-color .2s;
 }
-.shop-pill:hover { background: #d4d1e8; }
-.shop-pill.is-active { background: #200332; color: #FFFFFF; }
+.shop-pill:hover,
+.shop-pill:focus { background: #d4d1e8; border-color: #b8b3d9; }
+.shop-pill.is-active { background: #200332; color: #FFFFFF; border-color: #200332; }
+.shop-pill.is-active:hover,
+.shop-pill.is-active:focus { background: #3a0652; border-color: #3a0652; }
 
 /* Informaci�n del listado + ordenamiento */
-.shop-meta { display: flex; align-items: center; justify-content: flex-end; gap: .75rem; flex-wrap: wrap; margin-left: 2rem; }
-.shop-meta p { margin: 0; font-size: 1rem; color: #4d4659; }
+.shop-meta { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin-left: 2rem; }
+.shop-meta p { margin: 0; font-size: 1rem; color: #4d4659; margin-left: var(--shop-meta-offset, 0); }
 .shop-sort { display: inline-flex; align-items: center; gap: .5rem; font-size: 1rem; color: #4d4659; }
 .shop-sort-select { position: relative; }
 .shop-sort-select::after { content: ""; position: absolute; right: .7rem; top: 50%; width: .45rem; height: .45rem; border-right: 2px solid #4d4659; border-bottom: 2px solid #4d4659; transform: translateY(-70%) rotate(45deg); pointer-events: none; }

@@ -27,22 +27,21 @@ const POOL: Product[] = [...PRODUCTS, ...Object.values(CATALOG).flat()];
 
 // Algunos grupos de la interfaz reúnen los slugs históricos del catálogo.
 const PILL_CATEGORY_GROUPS: Record<string, string[]> = {
-  technology: ["technology", "tecnologia"],
-  "personal-care": ["personal-care"],
-  home: ["home", "electricos"],
-  accessories: ["accessories"],
-  automotive: ["automotive"],
+  tecnologia: ["tecnologia", "technology"],
+  electricos: ["electricos", "home"],
+  belleza: ["belleza", "personal-care"],
+  perfumeria: ["perfumeria"],
+  mascotas: ["mascotas"],
 };
 
 // Slugs en inglés del mock que no están en CATEGORIES: se traducen para mostrarlos bien.
-  const EXTRA_CATEGORY_LABELS: Record<string, string> = {
-    technology: "Tecnología",
-    tecnologia: "Tecnología",
-    "personal-care": "Cuidado personal",
-    accessories: "Accesorios",
-    automotive: "Autopartes",
-    home: "Hogar",
-  };
+const EXTRA_CATEGORY_LABELS: Record<string, string> = {
+  technology: "Tecnología",
+  "personal-care": "Belleza",
+  home: "Eléctricos",
+  accessories: "Accesorios",
+  automotive: "Autopartes",
+};
 
 function categoryLabel(slug: string): string {
   return (
@@ -79,7 +78,7 @@ function Catalogo() {
 
   // Categorías principales de la navegación horizontal de la maqueta.
   // Los slugs mantienen la compatibilidad con el catálogo ya existente.
-  const pillCats = ["technology", "personal-care", "home", "accessories", "automotive"];
+  const pillCats = ["tecnologia", "electricos", "belleza", "perfumeria", "mascotas"];
 
   // Al cambiar cualquier criterio se vuelve a la primera página.
   useEffect(() => {
@@ -172,7 +171,15 @@ function Catalogo() {
               key={slug}
               type="button"
               className={pill === slug ? "shop-pill is-active" : "shop-pill"}
-              onClick={() => setPill(slug)}
+              onClick={() => {
+                setPill(slug);
+                if (slug === "todos") {
+                  setCats([]);
+                  setMaxPrice(PRICE_CAP);
+                  setAvailability([]);
+                  setDiscount([]);
+                }
+              }}
               aria-pressed={pill === slug}
             >
               {slug === "todos" ? "Todos" : categoryLabel(slug)}

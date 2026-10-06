@@ -15,9 +15,9 @@ export const CATEGORIES: Category[] = [
 
 // Pool único: cada producto aparece una sola vez; las secciones usan slices.
 export const PRODUCTS: Product[] = [
-  { slug: "audifonos-pro", name: "Audífonos Pro importados", category: "technology", price: 189900, oldPrice: 239900, emoji: "🎧", image: "/images/products/technology/audifonos-pro.svg", rating: 4.8, sold: 320 },
-  { slug: "smartwatch-x2", name: "Smartwatch X2", category: "technology", price: 249900, emoji: "⌚", image: "/images/products/technology/smartwatch-x2.svg", rating: 4.7, sold: 210 },
-  { slug: "parlante-360", name: "Parlante 360°", category: "technology", price: 159900, emoji: "🔊", image: "/images/products/technology/parlante-360.svg", rating: 4.6, sold: 180 },
+  { slug: "audifonos-pro", name: "Audífonos Pro importados", category: "tecnologia", price: 189900, oldPrice: 239900, emoji: "🎧", image: "/images/products/tecnologia/audifonos-pro.svg", rating: 4.8, sold: 320 },
+  { slug: "smartwatch-x2", name: "Smartwatch X2", category: "tecnologia", price: 249900, emoji: "⌚", image: "/images/products/tecnologia/smartwatch-x2.svg", rating: 4.7, sold: 210 },
+  { slug: "parlante-360", name: "Parlante 360°", category: "tecnologia", price: 159900, emoji: "🔊", image: "/images/products/tecnologia/parlante-360.svg", rating: 4.6, sold: 180 },
   { slug: "kit-auto-premium", name: "Kit cuidado auto premium", category: "automotive", price: 94900, emoji: "🧽", image: "/images/products/automotive/kit-auto-premium.svg", rating: 4.9, sold: 410 },
   { slug: "aspiradora-auto", name: "Aspiradora portátil auto", category: "automotive", price: 119900, emoji: "🚙", image: "/images/products/automotive/aspiradora-auto.svg", rating: 4.5, sold: 150 },
   { slug: "soporte-celular-auto", name: "Soporte magnético auto", category: "automotive", price: 39900, emoji: "🧲", image: "/images/products/automotive/soporte-magnetico-auto.svg", rating: 4.4, sold: 260 },
