@@ -10,7 +10,8 @@ import { cartService } from "@/services/cart.service";
 import { formatCOP } from "@/services/format";
 import type { Product } from "@/types/catalog";
 
-const PAGE_SIZE = 6;
+// La maqueta muestra cuatro filas de tres artículos por página.
+const PAGE_SIZE = 12;
 const PRICE_CAP = 500000;
 
 const SORTS = [
@@ -24,10 +25,19 @@ type SortValue = (typeof SORTS)[number]["value"];
 
 const POOL: Product[] = [...PRODUCTS, ...Object.values(CATALOG).flat()];
 
+// Algunos grupos de la interfaz reúnen los slugs históricos del catálogo.
+const PILL_CATEGORY_GROUPS: Record<string, string[]> = {
+  technology: ["technology", "tecnologia"],
+  "personal-care": ["personal-care"],
+  home: ["home", "electricos"],
+  accessories: ["accessories"],
+  automotive: ["automotive"],
+};
+
 // Slugs en inglés del mock que no están en CATEGORIES: se traducen para mostrarlos bien.
   const EXTRA_CATEGORY_LABELS: Record<string, string> = {
-    technology: "Tecnológicos",
-    tecnologia: "Tecnológicos",
+    technology: "Tecnología",
+    tecnologia: "Tecnología",
     "personal-care": "Cuidado personal",
     accessories: "Accesorios",
     automotive: "Autopartes",
@@ -67,8 +77,9 @@ function Catalogo() {
     []
   );
 
-  // Categorías visibles en pills (7 principales + "todos").
-  const pillCats = ["perfumeria", "televentas", "belleza", "tecnologia", "electricos", "mascotas"];
+  // Categorías principales de la navegación horizontal de la maqueta.
+  // Los slugs mantienen la compatibilidad con el catálogo ya existente.
+  const pillCats = ["technology", "personal-care", "home", "accessories", "automotive"];
 
   // Al cambiar cualquier criterio se vuelve a la primera página.
   useEffect(() => {
@@ -82,7 +93,7 @@ function Catalogo() {
   const filtered = useMemo(() => {
     let list = POOL.filter((p) => {
       if (query && !`${p.name} ${categoryLabel(p.category)}`.toLowerCase().includes(query)) return false;
-      if (pill !== "todos" && p.category !== pill) return false;
+      if (pill !== "todos" && !(PILL_CATEGORY_GROUPS[pill] ?? [pill]).includes(p.category)) return false;
       if (cats.length > 0 && !cats.includes(p.category)) return false;
       if (p.price > maxPrice) return false;
       if (availability.includes("bodega") && !(p.sold > 0 || p.price > 0)) return false;
@@ -132,7 +143,7 @@ function Catalogo() {
         <section className="shop-banner" aria-label="Promoción destacada">
           <div className="shop-banner-figure" aria-hidden="true">
             <img
-              src="/images/products/banner/grandes-productos.svg"
+              src="/images/products/banner/grandes-productos.png"
               alt=""
               style={{ width: "100%", height: "100%", objectFit: "contain" }}
             />
@@ -298,6 +309,9 @@ function Catalogo() {
               const d = discountOf(p);
               return (
                 <article className="shop-card" key={p.slug}>
+                  <h3 className="shop-card-name">
+                    <Link href={`/productos/${p.slug}`}>{p.name}</Link>
+                  </h3>
                   <Link href={`/productos/${p.slug}`} className="shop-card-media" aria-label={p.name}>
                     <Image
                       src={p.image}
@@ -307,9 +321,6 @@ function Catalogo() {
                       style={{ objectFit: "contain" }}
                     />
                   </Link>
-                  <h3 className="shop-card-name">
-                    <Link href={`/productos/${p.slug}`}>{p.name}</Link>
-                  </h3>
                   <div className="shop-card-foot">
                     <p className="shop-card-price">{formatCOP(p.price)}</p>
                     <button
@@ -323,7 +334,10 @@ function Catalogo() {
                       +
                     </button>
                   </div>
-                  <p className="shop-card-meta">{d !== null ? `-${d}% ` : ""}1 und</p>
+                  <p className="shop-card-meta">
+                    {d !== null && <span className="shop-card-discount">-{d}%</span>}
+                    <span className="shop-card-units">1 Und</span>
+                  </p>
                 </article>
               );
             })}

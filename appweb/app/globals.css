@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Days+One&family=Orbitron:wght@700&family=Plus+Jakarta+Sans:wght@400;500&family=Poppins:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Days+One&family=Orbitron:wght@700&family=Plus+Jakarta+Sans:wght@400;500&family=Poppins:wght@400;500;600&display=swap");
 
 /* Eurostile Extended Bold es una fuente con licencia: coloca los archivos
    en public/fonts/ con estos nombres y el navegador la usará automáticamente.
@@ -1216,7 +1216,7 @@ a { color: inherit; }
   text-transform: uppercase;
   text-align: center;
 }
-.shop-banner-sub { margin: 2.5rem auto 0; font-family: "Poppins", "Montserrat", sans-serif; font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.5; color: #000000; max-width: 40rem; font-weight: 400; }
+.shop-banner-sub { margin: 2rem 0 0 10rem; font-family: "Poppins", "Montserrat", sans-serif; font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.5; color: #000000; max-width: 40rem; font-weight: 400; }
 
 
 /* Fila de categor�as (pills) */
@@ -1320,33 +1320,35 @@ a { color: inherit; }
 }
 .shop-apply:hover { filter: brightness(1.06); }
 
-/* Grid de productos: 3 columnas en desktop */
-.shop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; align-items: stretch; }
+/* Grid de productos: tarjetas compactas como el diseño de referencia. */
+.shop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 30rem)); justify-content: start; gap: 1.1rem; align-items: stretch; }
 .shop-card {
   display: flex;
   flex-direction: column;
-  background: #e7e9f8;
+  background: #edf1ff;
   border: 0;
-  border-radius: 1.25rem;
-  padding: 1rem 1.1rem 1.1rem;
+  border-radius: 1.7rem;
+  padding: 1.35rem 1.25rem 1.25rem;
 }
-.shop-card-media { position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; margin: 0 0 .7rem; border-radius: .9rem; background: #f4f5fd; overflow: hidden; }
-.shop-card-name { margin: 0 0 .35rem; font-size: .85rem; font-weight: 800; line-height: 1.35; text-align: center; text-transform: uppercase; letter-spacing: .02em; color: #241c4e; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.3em; }
+.shop-card-media { position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; margin: .55rem 0 1rem; border-radius: .9rem; background: transparent; overflow: hidden; }
+.shop-card-name { margin: 0; font-family: "Days One", "Arial Black", sans-serif; font-size: clamp(.8rem, 1vw, 1.05rem); font-weight: 400; line-height: 1.35; text-align: center; text-transform: uppercase; letter-spacing: .02em; color: #200332; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.7em; }
 .shop-card-name a { color: inherit; text-decoration: none; }
 .shop-card-name a:hover { color: var(--primary); }
 .shop-card-foot { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: auto; }
-.shop-card-price { margin: 0; font-size: 1.18rem; font-weight: 900; color: #241c4e; }
-.shop-card-meta { margin: .3rem 0 0; font-size: .8rem; color: #8a91b8; }
+.shop-card-price { margin: 0; font-family: "Poppins", "Montserrat", sans-serif; font-size: clamp(1.45rem, 2vw, 2.25rem); font-weight: 600; line-height: 1; color: #200332; }
+.shop-card-meta { display: flex; align-items: center; gap: .75rem; min-height: 2rem; margin: .55rem 0 0; font-family: "Poppins", "Montserrat", sans-serif; font-size: clamp(.9rem, 1.15vw, 1.1rem); font-weight: 500; line-height: 1; color: #200332; }
+.shop-card-discount { padding: .4rem .55rem; border-radius: 999px; background: #d9e0ff; }
+.shop-card-units { white-space: nowrap; }
 .shop-card-add {
   flex: 0 0 auto;
-  width: 2.7rem;
-  height: 2.7rem;
+  width: 3.6rem;
+  height: 3.6rem;
   border: 0;
   border-radius: 50%;
-  background: #d9def7;
-  color: #221a4a;
-  font-size: 1.3rem;
-  font-weight: 700;
+  background: #7184f6;
+  color: #fff;
+  font-size: 2.6rem;
+  font-weight: 400;
   line-height: 1;
   cursor: pointer;
 }
@@ -1380,7 +1382,7 @@ a { color: inherit; }
 /* Tablet: filtros m�s estrechos, 2 columnas */
 @media (max-width: 1100px) {
   .shop-layout { grid-template-columns: 300px minmax(0, 1fr); }
-  .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shop-grid { grid-template-columns: repeat(2, minmax(0, 15rem)); }
 }
 
 /* M�vil: filtros desplegables, banner reducido, pills con scroll */
@@ -1402,4 +1404,43 @@ a { color: inherit; }
   .shop-wrap { padding: 1rem .9rem 2.5rem; }
   .shop-grid { grid-template-columns: minmax(0, 1fr); }
   .shop-meta { align-items: flex-start; flex-direction: column; }
+}
+
+.shop-banner {
+  margin-top: .8rem;
+  min-height: 20rem;
+  overflow: visible;
+  position: relative;
+  isolation: isolate;
+  background: #fef8f0;
+  border: 1px solid #fedac0;
+}
+.shop-banner-figure {
+  position: absolute;
+  left: 5rem;
+  bottom: -5.3rem;
+  width: 15%;
+  align-self: end;
+  justify-content: flex-start;
+  z-index: 3;
+}
+.shop-banner-figure img {
+  position: relative;
+  z-index: 0;
+  transform: translate(0, 1.1rem) scale(1.80);
+}
+.shop-banner-text { grid-column: 2; }
+.shop-banner-decor {
+  position: absolute;
+  right: -0.1rem;
+  bottom: 0;
+  width: 20.6%;
+  overflow: hidden;
+  border-bottom-right-radius: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .shop-banner-figure { position: relative; left: auto; bottom: auto; width: 100%; }
+  .shop-banner-text { grid-column: auto; }
+  .shop-banner-decor { position: relative; right: auto; bottom: auto; width: 100%; }
 }
