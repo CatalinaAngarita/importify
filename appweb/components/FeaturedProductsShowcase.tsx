@@ -19,7 +19,7 @@ export function FeaturedProductsShowcase({ showMore = true }: { showMore?: boole
         {showMore && <Link href="/productos" className="home-more">VER MÁS</Link>}
       </div>
       <div className="featured-products-grid">
-        {PRODUCTS.map((product) => (
+        {PRODUCTS.slice(0, 3).map((product) => (
           <Link href="/productos" className={`featured-product ${product.className}`} key={product.title}>
             <div className="featured-product-image">
               <Image src={product.image} alt={product.title} fill sizes="(max-width: 720px) 100vw, 33vw" />

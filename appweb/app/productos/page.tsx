@@ -132,9 +132,9 @@ function Catalogo() {
         <section className="shop-banner" aria-label="Promoción destacada">
           <div className="shop-banner-figure" aria-hidden="true">
             <img
-              src="/images/banners/ofertas-repartidor.svg"
+              src="/images/products/banner/grandes-productos.svg"
               alt=""
-              style={{ width: "100%", height: "100%", objectFit: "contain", transform: "scale(1.1) translateX(-1.5rem)", transformOrigin: "center" }}
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
             />
           </div>
           <div className="shop-banner-text">
@@ -147,9 +147,9 @@ function Catalogo() {
           </div>
           <div className="shop-banner-decor" aria-hidden="true">
             <img
-              src="/images/banners/ofertas-cajas.svg"
+              src="/images/products/banner/paquete-grandes-productos.svg"
               alt=""
-              style={{ height: "70%", objectFit: "contain", transform: "translateX(4rem)" }}
+              style={{ height: "60%", objectFit: "contain" }}
             />
           </div>
         </section>

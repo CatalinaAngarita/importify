@@ -1,9 +1,10 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import type { Product } from "@/types/catalog";
 
 interface CartItem {
-  product: { slug: string; name: string; price: number; image: string };
+  product: Product;
   qty: number;
 }
 
