@@ -21,6 +21,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("importify-cart");
@@ -31,11 +32,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems([]);
       }
     }
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem("importify-cart", JSON.stringify(items));
-  }, [items]);
+  }, [items, hydrated]);
 
   const count = items.reduce((n, i) => n + i.qty, 0);
 

@@ -32,7 +32,7 @@ export function ProductCard({ product }: { product: Product }) {
       </h3>
       <div className="product-media" style={{ padding: 0, overflow: "hidden", position: "relative", width: "100%", aspectRatio: "1 / 0.85" }}>
         <Image
-          src={product.image}
+          src={`${product.primaryImage || product.image}?v=2`}
           alt={product.name}
           fill
           sizes="(max-width: 720px) 100vw, 300px"

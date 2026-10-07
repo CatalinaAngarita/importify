@@ -27,6 +27,8 @@ export interface ApiProduct {
   isActive: boolean;
   isFeatured: boolean;
   isBestSeller: boolean;
+  primaryImage?: string | null;
+  primaryImageOriginal?: string | null;
 }
 
 export interface ApiCartItem {

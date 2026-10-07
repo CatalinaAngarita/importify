@@ -30,6 +30,8 @@ export interface Product {
   oldPrice?: number;
   emoji: string;
   image: string;
+  primaryImage?: string | null;
+  primaryImageOriginal?: string | null;
   rating: number;
   sold: number;
 }

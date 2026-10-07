@@ -9,7 +9,7 @@ import { SectionTitle } from "@/components/SectionTitle";
 import { ProductCard } from "@/components/ProductCard";
 import { PRODUCTS } from "@/services/catalog.mock";
 import { formatCOP } from "@/services/format";
-import { cartService } from "@/services/cart.service";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductoDetalle({ params }: { params: { slug: string } }) {
   const product = PRODUCTS.find((p) => p.slug === params.slug);
@@ -18,21 +18,16 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
     (p) => p.category === product.category && p.slug !== product.slug,
   ).slice(0, 4);
 
+  const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
-  const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
 
-  async function addToCart() {
+  function addToCart() {
     if (!product) return;
-    setBusy(true);
-    try {
-      const cart = await cartService.getOrCreate();
-      await cartService.addItem(cart.id, product.slug, quantity);
-      setQuantity(1);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setBusy(false);
-    }
+    addItem(product, quantity);
+    setQuantity(1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
   }
 
   return (
@@ -41,14 +36,14 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
         <section className="section">
           <div className="detail">
             <div className="product-media" style={{ padding: 0, overflow: "hidden", position: "relative" }}>
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              sizes="(max-width: 720px) 100vw, 500px"
-              style={{ objectFit: "cover" }}
-              priority
-            />
+<Image
+          src={`${product.primaryImage || product.image}?v=2`}
+          alt={product.name}
+          fill
+          sizes="(max-width: 720px) 100vw, 500px"
+          style={{ objectFit: "cover" }}
+          priority
+        />
           </div>
             <div>
               <span className="tag">{product.category}</span>
@@ -64,7 +59,7 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", border: "1px solid #dce3fa", borderRadius: "8px", overflow: "hidden" }}>
                   <button
                     className="btn btn-ghost"
-                    disabled={busy || quantity <= 1}
+                    disabled={quantity <= 1}
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                     style={{ padding: "0.5rem 1rem", minWidth: "44px" }}
                   >
@@ -73,7 +68,6 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
                   <span style={{ minWidth: "3rem", textAlign: "center" }}>{quantity}</span>
                   <button
                     className="btn btn-ghost"
-                    disabled={busy}
                     onClick={() => setQuantity(q => q + 1)}
                     style={{ padding: "0.5rem 1rem", minWidth: "44px" }}
                   >
@@ -82,8 +76,8 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
                 </div>
               </div>
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                <button className="btn" onClick={addToCart} disabled={busy}>
-                  {busy ? "Agregando..." : "Agregar al carrito"}
+                <button className="btn" onClick={addToCart}>
+                  {added ? "✓ Agregado al carrito" : "Agregar al carrito"}
                 </button>
                 <Link href="/checkout" className="btn btn-ghost">
                   Comprar ahora

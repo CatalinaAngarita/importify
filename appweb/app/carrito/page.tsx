@@ -142,7 +142,7 @@ export default function CarritoPage() {
                     <span>TOTAL</span>
                     <span>{formatCOP(total)}</span>
                   </div>
-                  <Link href="/checkout/paso-1" className="btn" style={{ width: "100%", marginTop: "1.5rem", textAlign: "center", padding: "1rem" }}>
+                  <Link href="/checkout" className="btn" style={{ width: "100%", marginTop: "1.5rem", textAlign: "center", padding: "1rem" }}>
                     FINALIZAR COMPRA
                   </Link>
                 </div>

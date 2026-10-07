@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { CATEGORIES, PRODUCTS } from "@/services/catalog.mock";
 import { CATALOG } from "@/services/catalog.products";
-import { cartService } from "@/services/cart.service";
+import { useCart } from "@/context/CartContext";
 import { formatCOP } from "@/services/format";
 import type { Product } from "@/types/catalog";
 
@@ -59,6 +59,7 @@ function discountOf(p: Product): number | null {
 function Catalogo() {
   const searchParams = useSearchParams();
   const query = (searchParams.get("q") ?? "").trim().toLowerCase();
+  const { items, addItem } = useCart();
 
   const [pill, setPill] = useState("todos");
   const [cats, setCats] = useState<string[]>([]);
@@ -68,7 +69,6 @@ function Catalogo() {
   const [sort, setSort] = useState<SortValue>("relevantes");
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [adding, setAdding] = useState<string | null>(null);
 
   // Lista completa de categorías para filtros sidebar.
   const allCats = useMemo(
@@ -112,27 +112,12 @@ function Catalogo() {
   const current = Math.min(page, totalPages);
   const visible = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
-  async function addToCart(product: Product) {
-    if (adding) return;
-    setAdding(product.slug);
-    try {
-      const cart = await cartService.getOrCreate();
-      await cartService.addItem(cart.id, product.slug, 1);
-    } catch {
-      // Sin backend disponible: se conserva localmente.
-      try {
-        const raw = window.localStorage.getItem("importify_local_cart");
-        const local: { slug: string; qty: number }[] = raw ? JSON.parse(raw) : [];
-        const found = local.find((i) => i.slug === product.slug);
-        if (found) found.qty += 1;
-        else local.push({ slug: product.slug, qty: 1 });
-        window.localStorage.setItem("importify_local_cart", JSON.stringify(local));
-      } catch {
-        // Almacenamiento no disponible: no se interrumpe la navegación.
-      }
-    } finally {
-      setAdding(null);
-    }
+  function qtyOf(slug: string): number {
+    return items.find((i) => i.product.slug === slug)?.qty ?? 0;
+  }
+
+  function addToCart(product: Product) {
+    addItem(product, 1);
   }
 
   return (
@@ -314,14 +299,16 @@ function Catalogo() {
           <section className="shop-grid" aria-label="Listado de productos">
             {visible.map((p) => {
               const d = discountOf(p);
+              const qty = qtyOf(p.slug);
               return (
                 <article className="shop-card" key={p.slug}>
                   <h3 className="shop-card-name">
                     <Link href={`/productos/${p.slug}`}>{p.name}</Link>
                   </h3>
                   <Link href={`/productos/${p.slug}`} className="shop-card-media" aria-label={p.name}>
+                    {qty > 0 && <span className="shop-card-qty">{qty}</span>}
                     <Image
-                      src={p.image}
+                      src={`${p.primaryImage || p.image}?v=2`}
                       alt={p.name}
                       fill
                       sizes="(max-width: 720px) 45vw, (max-width: 1100px) 30vw, 300px"
@@ -334,7 +321,6 @@ function Catalogo() {
                       type="button"
                       className="shop-card-add"
                       onClick={() => addToCart(p)}
-                      disabled={adding === p.slug}
                       aria-label={`Agregar ${p.name} al carrito`}
                       title="Agregar al carrito"
                     >
