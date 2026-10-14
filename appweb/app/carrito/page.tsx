@@ -11,6 +11,7 @@ import { formatCOP, formatCOPWithSuffix } from "@/services/format";
 
 export default function CarritoPage() {
   const { items, count, updateQty, removeItem } = useCart();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [notice, setNotice] = useState<string | null>(null);
 
   const cartItems = items.map((item) => {
@@ -21,6 +22,26 @@ export default function CarritoPage() {
       subtotal: (product?.price ?? item.product.price) * item.qty,
     };
   });
+
+  const allSelected = cartItems.length > 0 && cartItems.every((i) => selected.has(i.product.slug));
+
+  function toggleSelect(slug: string) {
+    const next = new Set(selected);
+    if (next.has(slug)) {
+      next.delete(slug);
+    } else {
+      next.add(slug);
+    }
+    setSelected(next);
+  }
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelected(new Set());
+      return;
+    }
+    setSelected(new Set(cartItems.map((i) => i.product.slug)));
+  }
 
   const subtotal = cartItems.reduce((sum, i) => sum + i.subtotal, 0);
   const shipping = subtotal > 0 ? 15000 : 0;
@@ -58,50 +79,63 @@ export default function CarritoPage() {
             <div className="cart-layout">
               <div>
                 <div className="cart-head">
-                  <span className="cart-head-product">Producto</span>
-                  <span>Precio</span>
-                  <span className="cart-head-qty">Cantidad</span>
-                  <span className="cart-head-subtotal">Subtotal</span>
-                  <span></span>
+                  <span className="cart-head-check"><input type="checkbox" checked={allSelected} onChange={toggleSelectAll} /></span>
+                  <span className="cart-head-select">Todos</span>
                 </div>
                 {cartItems.map((item) => (
-                  <div key={item.product.slug} className="cart-row">
-                    <div className="cart-product">
+                  <div key={item.product.slug} className="cart-card">
+                    <input
+                      type="checkbox"
+                      className="cart-card-checkbox"
+                      checked={selected.has(item.product.slug)}
+                      onChange={() => toggleSelect(item.product.slug)}
+                    />
+                    <div className="cart-card-media">
                       <Image
                         src={item.product.image}
                         alt={item.product.name}
-                        width={130}
-                        height={130}
-                        className="cart-product-image"
+                        width={118}
+                        height={118}
+                        className="cart-card-image"
                       />
-                      <div>
-                        <p className="cart-product-name">{item.product.name}</p>
-                        <p className="cart-product-category">{item.product.category}</p>
+                    </div>
+                    <div className="cart-card-body">
+                      <div className="cart-card-top">
+                        <div>
+                          <p className="cart-card-name">{item.product.name}</p>
+                          <p className="cart-card-category">{item.product.category}</p>
+                          <div className="cart-card-tags">
+                            <span className="cart-card-tag">Color: Oro</span>
+                            <span className="cart-card-tag">Cantidad: {item.qty}</span>
+                          </div>
+                        </div>
+                        <button
+                          className="cart-card-remove"
+                          onClick={() => handleRemove(item.product.slug)}
+                          aria-label="Eliminar"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                      <div className="cart-card-bottom">
+                        <div className="cart-card-price">{formatCOP(item.product.price)}</div>
+                        <div className="cart-card-qty">
+                          <button
+                            className="cart-card-qty-btn"
+                            onClick={() => handleUpdateQty(item.product.slug, item.qty - 1)}
+                          >
+                            −
+                          </button>
+                          <span className="cart-card-qty-value">{item.qty}</span>
+                          <button
+                            className="cart-card-qty-btn"
+                            onClick={() => handleUpdateQty(item.product.slug, item.qty + 1)}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="cart-price">{formatCOP(item.product.price)}</div>
-                    <div className="cart-qty">
-                      <button
-                        className="btn btn-ghost cart-qty-btn"
-                        onClick={() => handleUpdateQty(item.product.slug, item.qty - 1)}
-                      >
-                        −
-                      </button>
-                      <span className="cart-qty-value">{item.qty}</span>
-                      <button
-                        className="btn btn-ghost cart-qty-btn"
-                        onClick={() => handleUpdateQty(item.product.slug, item.qty + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="cart-subtotal">{formatCOP(item.subtotal)}</div>
-                    <button
-                      className="btn btn-ghost cart-remove"
-                      onClick={() => handleRemove(item.product.slug)}
-                    >
-                      Eliminar
-                    </button>
                   </div>
                 ))}
               </div>
