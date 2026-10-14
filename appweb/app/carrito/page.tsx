@@ -7,10 +7,10 @@ import { Container } from "@/components/Container";
 import { SectionTitle } from "@/components/SectionTitle";
 import { useCart } from "@/context/CartContext";
 import { PRODUCTS } from "@/services/catalog.mock";
-import { formatCOP } from "@/services/format";
+import { formatCOP, formatCOPWithSuffix } from "@/services/format";
 
 export default function CarritoPage() {
-  const { items, count, updateQty, removeItem, clearCart } = useCart();
+  const { items, count, updateQty, removeItem } = useCart();
   const [notice, setNotice] = useState<string | null>(null);
 
   const cartItems = items.map((item) => {
@@ -36,18 +36,13 @@ export default function CarritoPage() {
     updateQty(slug, qty);
   }
 
-  function handleClear() {
-    clearCart();
-    setNotice("Carrito vaciado");
-  }
-
   function handleRemove(slug: string) {
     removeItem(slug);
     setNotice("Producto eliminado");
   }
 
   return (
-    <main>
+    <main className="cart-page">
       <Container>
         <section className="section">
           <SectionTitle title="TU CARRITO" />
@@ -60,90 +55,79 @@ export default function CarritoPage() {
               </Link>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "2rem", alignItems: "start" }}>
+            <div className="cart-layout">
               <div>
-                <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap", fontSize: "0.9rem", color: "#5c5c72" }}>
-                  <span style={{ fontWeight: 600, width: "120px" }}>Producto</span>
-                  <span style={{ fontWeight: 600 }}>Precio</span>
-                  <span style={{ fontWeight: 600, width: "140px" }}>Cantidad</span>
-                  <span style={{ fontWeight: 600, width: "100px" }}>Subtotal</span>
+                <div className="cart-head">
+                  <span className="cart-head-product">Producto</span>
+                  <span>Precio</span>
+                  <span className="cart-head-qty">Cantidad</span>
+                  <span className="cart-head-subtotal">Subtotal</span>
                   <span></span>
                 </div>
                 {cartItems.map((item) => (
-                  <div key={item.product.slug} style={{ display: "flex", gap: "1rem", alignItems: "center", padding: "1rem 0", borderBottom: "1px solid #dce3fa", flexWrap: "wrap" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem", minWidth: "200px" }}>
+                  <div key={item.product.slug} className="cart-row">
+                    <div className="cart-product">
                       <Image
                         src={item.product.image}
                         alt={item.product.name}
-                        width={80}
-                        height={80}
-                        style={{ objectFit: "contain", borderRadius: "8px", background: "#f5f5f5" }}
+                        width={130}
+                        height={130}
+                        className="cart-product-image"
                       />
                       <div>
-                        <p style={{ margin: 0, fontWeight: 500, fontSize: "0.95rem" }}>{item.product.name}</p>
-                        <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "#5c5c72" }}>{item.product.category}</p>
+                        <p className="cart-product-name">{item.product.name}</p>
+                        <p className="cart-product-category">{item.product.category}</p>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 600, fontSize: "1rem", whiteSpace: "nowrap" }}>{formatCOP(item.product.price)}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", width: "140px" }}>
+                    <div className="cart-price">{formatCOP(item.product.price)}</div>
+                    <div className="cart-qty">
                       <button
-                        className="btn btn-ghost"
-                        style={{ padding: "0.35rem 0.7rem", fontSize: "1rem", minWidth: "36px" }}
+                        className="btn btn-ghost cart-qty-btn"
                         onClick={() => handleUpdateQty(item.product.slug, item.qty - 1)}
                       >
                         −
                       </button>
-                      <span style={{ minWidth: "30px", textAlign: "center", fontWeight: 600 }}>{item.qty}</span>
+                      <span className="cart-qty-value">{item.qty}</span>
                       <button
-                        className="btn btn-ghost"
-                        style={{ padding: "0.35rem 0.7rem", fontSize: "1rem", minWidth: "36px" }}
+                        className="btn btn-ghost cart-qty-btn"
                         onClick={() => handleUpdateQty(item.product.slug, item.qty + 1)}
                       >
                         +
                       </button>
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: "1rem", whiteSpace: "nowrap", width: "100px" }}>{formatCOP(item.subtotal)}</div>
+                    <div className="cart-subtotal">{formatCOP(item.subtotal)}</div>
                     <button
-                      className="btn btn-ghost"
-                      style={{ padding: "0.35rem 0.7rem", fontSize: "0.8rem" }}
+                      className="btn btn-ghost cart-remove"
                       onClick={() => handleRemove(item.product.slug)}
                     >
                       Eliminar
                     </button>
                   </div>
                 ))}
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-                  <Link href="/productos" className="btn btn-ghost">
-                    ← SEGUIR COMPRANDO
-                  </Link>
-                  <button className="btn btn-ghost" onClick={handleClear}>
-                    VACIAR CARRITO
-                  </button>
-                </div>
               </div>
 
-              <aside style={{ position: "sticky", top: "100px" }}>
-                <div className="card" style={{ padding: "1.5rem" }}>
-                  <h3 style={{ margin: "0 0 1rem", fontFamily: '"Days One", "Arial Black", sans-serif', fontSize: "1.2rem" }}>RESUMEN DE COMPRA</h3>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                    <span className="muted">Subtotal</span>
-                    <span style={{ fontWeight: 600 }}>{formatCOP(subtotal)}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+              <aside className="cart-aside">
+                <div className="card cart-summary">
+                  <h3 className="cart-summary-title">RESUMEN DE COMPRA</h3>
+                  <div className="cart-summary-line">
                     <span className="muted">Envío</span>
-                    <span style={{ fontWeight: 600 }}>{shipping === 0 ? "Gratis" : formatCOP(shipping)}</span>
+                    <span className="cart-summary-value">{shipping === 0 ? "Gratis" : formatCOP(shipping)}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                    <span className="muted">Impuestos (19%)</span>
-                    <span style={{ fontWeight: 600 }}>{formatCOP(tax)}</span>
+                  <div className="cart-summary-line">
+                    <span className="muted">Impuestos</span>
+                    <span className="cart-summary-value">{formatCOP(tax)}</span>
                   </div>
-                  <hr style={{ borderColor: "#dce3fa", margin: "1rem 0" }} />
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
+                  <hr className="cart-summary-divider" />
+                  <div className="cart-summary-total">
                     <span>TOTAL</span>
-                    <span>{formatCOP(total)}</span>
+                    <span className="cart-summary-total-value">{formatCOPWithSuffix(total)}</span>
                   </div>
-                  <Link href="/checkout" className="btn" style={{ width: "100%", marginTop: "1.5rem", textAlign: "center", padding: "1rem" }}>
+                  <p className="cart-summary-note">¡TÚ PEDIDO NOS IMPORTA!</p>
+                  <Link href="/checkout" className="btn cart-checkout">
                     FINALIZAR COMPRA
+                  </Link>
+                  <Link href="/productos" className="btn cart-checkout cart-continue">
+                    SEGUIR COMPRANDO
                   </Link>
                 </div>
               </aside>

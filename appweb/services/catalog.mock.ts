@@ -15,12 +15,6 @@ export const CATEGORIES: Category[] = [
 
 // Pool único: cada producto aparece una sola vez; las secciones usan slices.
 export const PRODUCTS: Product[] = [
-  { slug: "kit-auto-premium", name: "Kit cuidado auto premium", category: "automotive", price: 94900, emoji: "🧽", image: "/images/products/automotive/kit-auto-premium.svg", rating: 4.9, sold: 410 },
-  { slug: "aspiradora-auto", name: "Aspiradora portátil auto", category: "automotive", price: 119900, emoji: "🚙", image: "/images/products/automotive/aspiradora-auto.svg", rating: 4.5, sold: 150 },
-  { slug: "soporte-celular-auto", name: "Soporte magnético auto", category: "automotive", price: 39900, emoji: "🧲", image: "/images/products/automotive/soporte-magnetico-auto.svg", rating: 4.4, sold: 260 },
-  { slug: "mochila-urbana", name: "Mochila urbana", category: "accessories", price: 129900, emoji: "🎒", image: "/images/products/accessories/mochila-urbana.svg", rating: 4.8, sold: 380 },
-  { slug: "billetera-rfid", name: "Billetera RFID", category: "accessories", price: 59900, emoji: "👛", image: "/images/products/accessories/billetera-rfid.svg", rating: 4.6, sold: 290 },
-  { slug: "gafas-sol-polarizadas", name: "Gafas de sol polarizadas", category: "accessories", price: 79900, emoji: "🕶️", image: "/images/products/accessories/gafas-sol-polarizadas.svg", rating: 4.5, sold: 170 },
   { slug: "brocha-arancela-maquillaje", name: "Brocha y arancela de maquillaje", category: "belleza", price: 45900, oldPrice: 59900, emoji: "🖌️", image: "/images/products/Belleza/Brocha y arancela de maquillaje-nobg.png", rating: 4.7, sold: 280 },
   { slug: "cubre-pezon", name: "Cubre pezón", category: "belleza", price: 18900, oldPrice: 25900, emoji: "🩹", image: "/images/products/Belleza/cubre-pezon-nobg.png", rating: 4.5, sold: 420 },
   { slug: "depilador-dama", name: "Depilador de dama", category: "belleza", price: 89900, oldPrice: 119900, emoji: "💃", image: "/images/products/Belleza/Depilador-de-dama-nobg.png", rating: 4.8, sold: 350 },

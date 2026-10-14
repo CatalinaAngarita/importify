@@ -59,7 +59,7 @@ function discountOf(p: Product): number | null {
 function Catalogo() {
   const searchParams = useSearchParams();
   const query = (searchParams.get("q") ?? "").trim().toLowerCase();
-  const { items, addItem } = useCart();
+  const { items, addItem, updateQty, removeItem } = useCart();
 
   const [pill, setPill] = useState("todos");
   const [cats, setCats] = useState<string[]>([]);
@@ -69,6 +69,18 @@ function Catalogo() {
   const [sort, setSort] = useState<SortValue>("relevantes");
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [qtyPopover, setQtyPopover] = useState<string | null>(null);
+
+  // El control flotante de cantidad se cierra al hacer clic fuera de él.
+  useEffect(() => {
+    if (!qtyPopover) return;
+    function onDocDown(e: MouseEvent) {
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest(".shop-card-add-wrap")) setQtyPopover(null);
+    }
+    document.addEventListener("mousedown", onDocDown);
+    return () => document.removeEventListener("mousedown", onDocDown);
+  }, [qtyPopover]);
 
   // Lista completa de categorías para filtros sidebar.
   const allCats = useMemo(
@@ -118,6 +130,15 @@ function Catalogo() {
 
   function addToCart(product: Product) {
     addItem(product, 1);
+  }
+
+  function decrementFromCart(product: Product, qty: number) {
+    if (qty <= 1) {
+      removeItem(product.slug);
+      setQtyPopover(null);
+      return;
+    }
+    updateQty(product.slug, qty - 1);
   }
 
   return (
@@ -306,7 +327,6 @@ function Catalogo() {
                     <Link href={`/productos/${p.slug}`}>{p.name}</Link>
                   </h3>
                   <Link href={`/productos/${p.slug}`} className="shop-card-media" aria-label={p.name}>
-                    {qty > 0 && <span className="shop-card-qty">{qty}</span>}
                     <Image
                       src={`${p.primaryImage || p.image}?v=2`}
                       alt={p.name}
@@ -317,15 +337,53 @@ function Catalogo() {
                   </Link>
                   <div className="shop-card-foot">
                     <p className="shop-card-price">{formatCOP(p.price)}</p>
-                    <button
-                      type="button"
-                      className="shop-card-add"
-                      onClick={() => addToCart(p)}
-                      aria-label={`Agregar ${p.name} al carrito`}
-                      title="Agregar al carrito"
-                    >
-                      +
-                    </button>
+                    <span className="shop-card-add-wrap">
+                      <button
+                        type="button"
+                        className="shop-card-add"
+                        onClick={() => addToCart(p)}
+                        aria-label={`Agregar ${p.name} al carrito`}
+                        title="Agregar al carrito"
+                      >
+                        +
+                      </button>
+                      {qty > 0 && (
+                        <span
+                          className="shop-card-qty"
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Modificar cantidad de ${p.name}`}
+                          onClick={() => setQtyPopover(qtyPopover === p.slug ? null : p.slug)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setQtyPopover(qtyPopover === p.slug ? null : p.slug);
+                            }
+                          }}
+                        >
+                          {qty}
+                        </span>
+                      )}
+                      {qty > 0 && qtyPopover === p.slug && (
+                        <div className="qty-popover" role="group" aria-label="Cantidad">
+                          <button
+                            type="button"
+                            aria-label="Disminuir cantidad"
+                            onClick={() => decrementFromCart(p, qty)}
+                          >
+                            −
+                          </button>
+                          <span>{qty}</span>
+                          <button
+                            type="button"
+                            aria-label="Aumentar cantidad"
+                            onClick={() => addToCart(p)}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </span>
                   </div>
                   <p className="shop-card-meta">
                     {d !== null && <span className="shop-card-discount">-{d}%</span>}

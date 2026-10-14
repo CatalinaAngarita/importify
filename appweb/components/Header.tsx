@@ -17,7 +17,6 @@ export function Header() {
   const [query, setQuery] = useState("");
   const pathname = usePathname();
   const { count } = useCart();
-
   return (
     <header className="header">
       <div className="header-inner">
@@ -40,7 +39,7 @@ export function Header() {
               {l.label}
             </Link>
           ))}
-          <Link href="/login" className="login-link">Iniciar sesión</Link>
+          {!pathname.startsWith("/admin") && <Link href="/login" className="login-link">Iniciar sesión</Link>}
         </nav>
         <Link href="/carrito" className="cart-link" aria-label="Carrito">
           <Image
@@ -53,6 +52,7 @@ export function Header() {
           />
           <span className="cart-count">{count}</span>
         </Link>
+        
       </div>
     </header>
   );
