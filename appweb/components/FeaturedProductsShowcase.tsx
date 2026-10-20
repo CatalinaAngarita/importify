@@ -3,12 +3,12 @@ import Link from "next/link";
 import { CATALOG } from "@/services/catalog.products";
 
 const PRODUCTS = [
-  { title: "Aro de Luz I8", description: "Aro de luz profesional para fotos y videos.", image: "/images/products/Tecnologicos/aro-luz-I8.png", className: "featured-product-tech" },
-  { title: "Audífonos Personales", description: "Audio nítido y comodidad todo el día.", image: "/images/products/Tecnologicos/audifonos-personales.png", className: "featured-product-tech" },
-  { title: "Malumeta v2", description: "Potente herramienta eléctrica versátil.", image: "/images/products/Eléctricos/Malumeta-v2.png", className: "featured-product-electric" },
-  { title: "Maumeta 3D", description: "Impresora 3D de alta precisión.", image: "/images/products/Eléctricos/Maumeta-3D.png", className: "featured-product-electric" },
-  { title: "Brocha y arancela de maquillaje", description: "Set profesional para maquillaje.", image: "/images/products/Belleza/Brocha y arancela de maquillaje.png", className: "featured-product-beauty" },
-  { title: "Depilador de dama", description: "Depilación suave y duradera.", image: "/images/products/Belleza/Depilador-de-dama.png", className: "featured-product-beauty" },
+  { title: "Aro de Luz I8", description: "Aro de luz profesional para fotos y videos.", image: "/images/products/tecnologia/aro-luz-I8-nobg.png", className: "featured-product-tech" },
+  { title: "Audífonos Personales", description: "Audio nítido y comodidad todo el día.", image: "/images/products/tecnologia/audifonos-personales-nobg.png", className: "featured-product-tech" },
+  { title: "Malumeta v2", description: "Potente herramienta eléctrica versátil.", image: "/images/products/Eléctricos/Malumeta-v2-nobg.png", className: "featured-product-electric" },
+  { title: "Maumeta 3D", description: "Impresora 3D de alta precisión.", image: "/images/products/Eléctricos/Maumeta-3D-nobg.png", className: "featured-product-electric" },
+  { title: "Brocha y arancela de maquillaje", description: "Set profesional para maquillaje.", image: "/images/products/Belleza/Brocha y arancela de maquillaje-nobg.png", className: "featured-product-beauty" },
+  { title: "Depilador de dama", description: "Depilación suave y duradera.", image: "/images/products/Belleza/Depilador-de-dama-nobg.png", className: "featured-product-beauty" },
 ];
 
 export function FeaturedProductsShowcase({ showMore = true }: { showMore?: boolean }) {

@@ -64,22 +64,50 @@ interface AdminHeaderProps {
   onMenuClick: () => void;
 }
 
+interface AdminHeaderNotification {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  unread: boolean;
+  type: "order" | "warning" | "success" | "info";
+}
+
+const INITIAL_NOTIFICATIONS: AdminHeaderNotification[] = [
+  { id: 1, title: "Nuevo pedido", message: "Pedido #ORD-2024-001 recibido", time: "hace 5 min", unread: true, type: "order" },
+  { id: 2, title: "Stock bajo", message: "Producto SKU-0045 tiene 3 unidades", time: "hace 1 hora", unread: true, type: "warning" },
+  { id: 3, title: "Pago confirmado", message: "Pago de $1,250,000 COP aprobado", time: "hace 2 horas", unread: false, type: "success" },
+  { id: 4, title: "Nuevo cliente", message: "Juan Pérez se registró", time: "hace 4 horas", unread: false, type: "info" },
+];
+
 export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<AdminHeaderNotification[]>(INITIAL_NOTIFICATIONS);
+  const [user, setUser] = useState<{ firstName?: string; lastName?: string; email?: string; roleName?: string } | null>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const notifications = [
-    { id: 1, title: "Nuevo pedido", message: "Pedido #ORD-2024-001 recibido", time: "hace 5 min", unread: true, type: "order" },
-    { id: 2, title: "Stock bajo", message: "Producto SKU-0045 tiene 3 unidades", time: "hace 1 hora", unread: true, type: "warning" },
-    { id: 3, title: "Pago confirmado", message: "Pago de $1,250,000 COP aprobado", time: "hace 2 horas", unread: false, type: "success" },
-    { id: 4, title: "Nuevo cliente", message: "Juan Pérez se registró", time: "hace 4 horas", unread: false, type: "info" },
-  ];
-
   const unreadCount = notifications.filter((n) => n.unread).length;
+  const userName = user?.firstName || user?.lastName ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() : "Administrador";
+  const userRole = user?.roleName === "SUPERADMIN" ? "Superadmin" : "Administrador";
+
+  useEffect(() => {
+    authService
+      .me<{ firstName?: string; lastName?: string; email?: string; roleName?: string }>()
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, [pathname]);
+
+  function markAllRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  }
+
+  function markRead(id: number) {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -140,11 +168,21 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
             <div className="notifications-dropdown" role="menu">
               <div className="dropdown-header">
                 <h3>Notificaciones</h3>
-                {unreadCount > 0 && <button className="mark-read-btn">Marcar todas como leídas</button>}
+                {unreadCount > 0 && (
+                  <button className="mark-read-btn" onClick={markAllRead}>
+                    Marcar todas como leídas
+                  </button>
+                )}
               </div>
               <div className="dropdown-list" role="listbox">
                 {notifications.map((notif) => (
-                  <button key={notif.id} className={clsx("notification-item", notif.unread && "unread")} role="option">
+                  <button
+                    key={notif.id}
+                    className={clsx("notification-item", notif.unread && "unread")}
+                    role="option"
+                    aria-selected={notif.unread}
+                    onClick={() => markRead(notif.id)}
+                  >
                     <div className="notification-icon">
                       {notif.type === "order" && <OrderIcon />}
                       {notif.type === "warning" && <AlertIcon />}
@@ -178,8 +216,8 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
               <UserIcon className="avatar-icon" aria-hidden="true" />
             </div>
             <div className="user-info">
-              <span className="user-name">Carlos Mendoza</span>
-              <span className="user-role">Administrador</span>
+              <span className="user-name">{userName}</span>
+              <span className="user-role">{userRole}</span>
             </div>
             <ChevronDownIcon className="chevron-icon" aria-hidden="true" />
           </button>
@@ -191,15 +229,11 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                   <UserIcon className="avatar-icon" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="dropdown-user-name">Carlos Mendoza</p>
-                  <p className="dropdown-user-email">carlos@importify.com</p>
+                  <p className="dropdown-user-name">{userName}</p>
+                  <p className="dropdown-user-email">{user?.email ?? ""}</p>
                 </div>
               </div>
               <div className="dropdown-divider"></div>
-              <Link href="/admin/profile" className="dropdown-item" role="menuitem">
-                <UserIcon className="dropdown-icon" aria-hidden="true" />
-                <span>Mi perfil</span>
-              </Link>
               <Link href="/admin/settings" className="dropdown-item" role="menuitem">
                 <SettingsIcon className="dropdown-icon" aria-hidden="true" />
                 <span>Configuración</span>

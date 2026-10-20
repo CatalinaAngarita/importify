@@ -9,10 +9,6 @@ import { adminService } from "@/services/admin.service";
 import { formatCOP } from "@/services/format";
 import clsx from "clsx";
 
-function TrendingUpIcon({ className }: { className?: string }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>;
-}
-
 function ShoppingBagIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg>;
 }
@@ -31,6 +27,10 @@ function PlusIcon({ className }: { className?: string }) {
 
 function ArrowRightIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
+}
+
+function SlidersIcon({ className }: { className?: string }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>;
 }
 
 function ClockIcon({ className }: { className?: string }) {
@@ -65,13 +65,6 @@ function TrashIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
 }
 
-const statsCards = [
-  { title: "Ventas del mes", value: "$12.5M", change: "+12.5%", changeType: "positive" as const, icon: TrendingUpIcon, color: "primary" },
-  { title: "Pedidos totales", value: "1,234", change: "+8.2%", changeType: "positive" as const, icon: ShoppingBagIcon, color: "blue" },
-  { title: "Clientes activos", value: "567", change: "+3.1%", changeType: "positive" as const, icon: UsersIcon, color: "green" },
-  { title: "Productos en stock", value: "89", change: "-2.4%", changeType: "negative" as const, icon: BoxIcon, color: "orange" },
-];
-
 const recentActivity = [
   { id: 1, type: "order", title: "Nuevo pedido #ORD-2024-001", description: "Juan Pérez - 3 productos", time: "hace 5 min", icon: ShoppingBagIcon, color: "primary" },
   { id: 2, type: "payment", title: "Pago confirmado", description: "$1,250,000 COP - Orden #ORD-2024-001", time: "hace 15 min", icon: CreditCardIcon, color: "green" },
@@ -91,9 +84,9 @@ const recentProducts = [
   { id: 1, name: "Auriculares Bluetooth Pro", sku: "AUD-001", price: 299000, stock: 45, status: "active" },
   { id: 2, name: "Smartwatch Series 5", sku: "SWT-002", price: 899000, stock: 12, status: "active" },
   { id: 3, name: "Cargador Rápido 65W", sku: "CHG-003", price: 129000, stock: 3, status: "low-stock" },
-  { id: 4, name: "Mouse Ergonómico MX", sku: "MOU-004", price: 189000, stock: 28, status: "active" },
+  { id: 4, name: "Mouse Ergonómico MX", sku: "MOU-004", price: 189000, stock: 28, status: "draft" },
   { id: 5, name: "Teclado Mecánico RGB", sku: "KEY-005", price: 349000, stock: 0, status: "out-of-stock" },
-  { id: 6, name: "Monitor 27\" 4K", sku: "MON-006", price: 1299000, stock: 8, status: "active" },
+  { id: 6, name: "Monitor 27\" 4K", sku: "MON-006", price: 1299000, stock: 8, status: "paused" },
 ];
 
 const paymentSummary = [
@@ -113,8 +106,8 @@ const notifications = [
 function StatCard({ title, value, change, changeType, icon: Icon, color }: {
   title: string;
   value: string;
-  change: string;
-  changeType: "positive" | "negative";
+  change?: string;
+  changeType?: "positive" | "negative";
   icon: React.ComponentType<{ className?: string }>;
   color: string;
 }) {
@@ -135,7 +128,9 @@ function StatCard({ title, value, change, changeType, icon: Icon, color }: {
       <div className="stat-content">
         <p className="stat-title">{title}</p>
         <p className="stat-value">{value}</p>
-        <p className={clsx("stat-change", changeType)}>{change} vs mes anterior</p>
+        {change && (
+          <p className={clsx("stat-change", changeType)}>{changeType ? `${change} vs mes anterior` : change}</p>
+        )}
       </div>
     </article>
   );
@@ -179,11 +174,19 @@ function ActivityItem({ activity }: { activity: typeof recentActivity[0] }) {
   );
 }
 
-function ProductRow({ product }: { product: typeof recentProducts[0] }) {
+function ProductRow({ product, onEdit, onDelete, menuOpen, onToggleMenu }: {
+  product: typeof recentProducts[0];
+  onEdit: () => void;
+  onDelete: () => void;
+  menuOpen: boolean;
+  onToggleMenu: () => void;
+}) {
   const statusConfig: Record<string, { label: string; className: string }> = {
     active: { label: "Activo", className: "status-active" },
     "low-stock": { label: "Stock bajo", className: "status-warning" },
     "out-of-stock": { label: "Agotado", className: "status-danger" },
+    draft: { label: "Borrador", className: "status-neutral" },
+    paused: { label: "Pausado", className: "status-neutral" },
   };
 
   const config = statusConfig[product.status] ?? { label: "Desconocido", className: "status-active" };
@@ -206,9 +209,27 @@ function ProductRow({ product }: { product: typeof recentProducts[0] }) {
       <td><span className={clsx("status-badge", config.className)}>{config.label}</span></td>
       <td>
         <div className="action-menu">
-          <button className="action-btn" aria-label="Editar"><EditIcon className="action-icon" /></button>
-          <button className="action-btn" aria-label="Eliminar"><TrashIcon className="action-icon" /></button>
-          <button className="action-btn" aria-label="Más opciones"><MoreVerticalIcon className="action-icon" /></button>
+          <button className="action-btn" aria-label="Editar" onClick={onEdit}><EditIcon className="action-icon" /></button>
+          <button className="action-btn" aria-label="Eliminar" onClick={onDelete}><TrashIcon className="action-icon" /></button>
+          <div className="action-menu-wrap">
+            <button className="action-btn" aria-label="Más opciones" aria-expanded={menuOpen} onClick={onToggleMenu}>
+              <MoreVerticalIcon className="action-icon" />
+            </button>
+            {menuOpen && (
+              <div className="row-menu" role="menu">
+                <button role="menuitem" onClick={onEdit}>Ver en Productos</button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(product.sku).catch(() => {});
+                    onToggleMenu();
+                  }}
+                >
+                  Copiar SKU
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </td>
     </tr>
@@ -229,37 +250,76 @@ function PaymentSummaryItem({ item }: { item: typeof paymentSummary[0] }) {
   );
 }
 
-function NotificationItem({ notification }: { notification: typeof notifications[0] }) {
-  const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-    warning: AlertTriangleIcon,
-    info: BellIcon,
-    error: AlertTriangleIcon,
-    success: CheckCircleIcon,
-  };
-
-  const Icon = typeIcons[notification.type] ?? BellIcon;
-
+function NotificationItem({ notification, onClick }: { notification: typeof notifications[0]; onClick: () => void }) {
   return (
-    <div className={clsx("notification-item", notification.unread && "unread")}>
+    <button
+      type="button"
+      className={clsx("notification-item", notification.unread && "unread")}
+      onClick={onClick}
+      aria-label={notification.unread ? `Marcar como leída: ${notification.title}` : notification.title}
+    >
       <div className={clsx("notification-dot", notification.type)}></div>
       <div className="notification-content">
         <p className="notification-title">{notification.title}</p>
         <p className="notification-message">{notification.message}</p>
       </div>
       <span className="notification-time">{notification.time}</span>
-    </div>
+    </button>
   );
 }
 
 export default function AdminDashboardPage() {
   const { data, status, error, reload } = useApi(() => adminService.stats());
   const [activeTab, setActiveTab] = useState<"products" | "activity">("products");
+  const [productFilter, setProductFilter] = useState<"todos" | "activos" | "borradores" | "pausados">("todos");
+  const [products, setProducts] = useState(recentProducts);
+  const [dashNotifications, setDashNotifications] = useState(notifications);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [lowStockOnly, setLowStockOnly] = useState(false);
+  const [rowMenuId, setRowMenuId] = useState<number | null>(null);
+
+  function markAllNotificationsRead() {
+    setDashNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  }
+
+  function markNotificationRead(id: number) {
+    setDashNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
+  }
+
+  function deleteProduct(id: number) {
+    const product = products.find((p) => p.id === id);
+    if (!product) return;
+    if (!confirm(`¿Eliminar "${product.name}" de la lista?`)) return;
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  const statsCards = [
+    { title: "Total de Productos", value: String(data?.totalProducts ?? 0), change: "En catálogo", icon: BoxIcon, color: "primary" },
+    { title: "Productos en Stock", value: String(data?.inStock ?? 0), change: "Con disponibilidad", icon: ShoppingBagIcon, color: "green" },
+    { title: "Stock abajo", value: String(data?.lowStockCount ?? 0), change: `Hasta ${data?.lowStockThreshold ?? 5} unidades`, icon: AlertTriangleIcon, color: "orange" },
+    { title: "Productos Activos", value: String(data?.activeProducts ?? 0), change: "Habilitados en la tienda", icon: CheckCircleIcon, color: "blue" },
+  ];
+
+  const filterTabs = [
+    { key: "todos", label: "Todos" },
+    { key: "activos", label: "Activos" },
+    { key: "borradores", label: "Borradores" },
+    { key: "pausados", label: "Pausados" },
+  ] as const;
+
+  const filteredProducts = products.filter((p) => {
+    if (productFilter === "activos" && p.status !== "active") return false;
+    if (productFilter === "borradores" && p.status !== "draft") return false;
+    if (productFilter === "pausados" && p.status !== "paused") return false;
+    if (lowStockOnly && p.stock > 5) return false;
+    return true;
+  });
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
         <div>
-          <SectionTitle title="Dashboard" sub="Resumen general de tu tienda" />
+          <SectionTitle title="GESTIÓN DE PRODUCTOS" sub="Administra, actualiza y controla todo tu inventario desde un solo lugar." />
         </div>
         <a href="/admin/products?new=true" className="btn btn-primary">
           <PlusIcon className="btn-icon" aria-hidden="true" />
@@ -300,24 +360,82 @@ export default function AdminDashboardPage() {
               </div>
 
               {activeTab === "products" && (
-                <div className="table-container">
-                  <table className="data-table" role="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Producto</th>
-                        <th scope="col">Precio</th>
-                        <th scope="col">Stock</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentProducts.map((product) => (
-                        <ProductRow key={product.id} product={product} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <>
+                  <div className="filter-bar" role="group" aria-label="Filtrar productos por estado">
+                    {filterTabs.map((tab) => (
+                      <button
+                        key={tab.key}
+                        className={clsx("filter-btn", productFilter === tab.key && "active")}
+                        onClick={() => setProductFilter(tab.key)}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={clsx("filter-btn", "filter-btn-outline", filtersOpen && "active")}
+                      onClick={() => setFiltersOpen(!filtersOpen)}
+                      aria-expanded={filtersOpen}
+                    >
+                      <SlidersIcon className="filter-btn-icon" aria-hidden="true" />
+                      <span>Filtros</span>
+                    </button>
+                  </div>
+
+                  {filtersOpen && (
+                    <div className="filter-panel">
+                      <label className="filter-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={lowStockOnly}
+                          onChange={(e) => setLowStockOnly(e.target.checked)}
+                        />
+                        <span>Solo productos con stock bajo (≤ 5)</span>
+                      </label>
+                      {lowStockOnly && (
+                        <button type="button" className="filter-clear" onClick={() => setLowStockOnly(false)}>
+                          Limpiar
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {filteredProducts.length === 0 ? (
+                    <p className="empty-state">No hay productos con este estado.</p>
+                  ) : (
+                    <div className="table-container">
+                      <table className="data-table" role="table">
+                        <thead>
+                          <tr>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Stock</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredProducts.map((product) => (
+                            <ProductRow
+                              key={product.id}
+                              product={product}
+                              onEdit={() => {
+                                setRowMenuId(null);
+                                window.location.href = "/admin/products";
+                              }}
+                              onDelete={() => {
+                                setRowMenuId(null);
+                                deleteProduct(product.id);
+                              }}
+                              menuOpen={rowMenuId === product.id}
+                              onToggleMenu={() => setRowMenuId(rowMenuId === product.id ? null : product.id)}
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
               )}
 
               {activeTab === "activity" && (
@@ -350,10 +468,21 @@ export default function AdminDashboardPage() {
               </section>
 
               <section className="sidebar-card notifications-card" aria-label="Notificaciones recientes">
-                <h3>Notificaciones</h3>
+                <div className="card-heading-row">
+                  <h3>Notificaciones</h3>
+                  {dashNotifications.some((n) => n.unread) && (
+                    <button type="button" className="mark-read-btn" onClick={markAllNotificationsRead}>
+                      Marcar todas como leídas
+                    </button>
+                  )}
+                </div>
                 <div className="notifications-list">
-                  {notifications.map((notif) => (
-                    <NotificationItem key={notif.id} notification={notif} />
+                  {dashNotifications.map((notif) => (
+                    <NotificationItem
+                      key={notif.id}
+                      notification={notif}
+                      onClick={() => markNotificationRead(notif.id)}
+                    />
                   ))}
                 </div>
                 <a href="/admin/notifications" className="view-all-link">Ver todas</a>

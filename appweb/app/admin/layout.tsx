@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { AdminGuard } from "@/components/AdminGuard";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { AdminHeader } from "@/components/admin/Header";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   return (
     <AdminGuard>

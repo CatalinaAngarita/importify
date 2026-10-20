@@ -5,13 +5,14 @@ export interface SendOtpResponse {
   success: boolean;
   message: string;
   expiresIn?: number;
+  /** Solo en modo demo (sin SMTP configurado en el backend). */
+  code?: string;
 }
 
 export interface VerifyOtpResponse extends AuthTokens {
   user?: {
     id: string;
     email?: string;
-    phone?: string;
     firstName?: string;
     lastName?: string;
     roleName?: string;
@@ -37,11 +38,11 @@ export const authService = {
     }
     return res;
   },
-  async sendOtp(phone: string): Promise<SendOtpResponse> {
-    return apiPost<SendOtpResponse>("/auth/send-otp", { phone });
+  async sendOtp(email: string): Promise<SendOtpResponse> {
+    return apiPost<SendOtpResponse>("/auth/send-otp", { email });
   },
-  async verifyOtp(phone: string, code: string): Promise<VerifyOtpResponse> {
-    const res = await apiPost<VerifyOtpResponse>("/auth/verify-otp", { phone, code });
+  async verifyOtp(email: string, code: string): Promise<VerifyOtpResponse> {
+    const res = await apiPost<VerifyOtpResponse>("/auth/verify-otp", { email, code });
     if (res.accessToken) setToken(res.accessToken);
     if (typeof window !== "undefined" && res.refreshToken) {
       window.localStorage.setItem("importify_refresh_token", res.refreshToken);

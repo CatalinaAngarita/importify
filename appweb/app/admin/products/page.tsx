@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiState } from "@/components/ApiState";
 import { SectionTitle } from "@/components/SectionTitle";
 import { useApi } from "@/hooks/useApi";
@@ -9,6 +9,7 @@ import { formatCOP } from "@/services/format";
 
 export default function AdminProductsPage() {
   const { data, status, error, reload } = useApi(() => listProducts({ limit: 50 }));
+  const createFormRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [form, setForm] = useState({ sku: "", name: "", slug: "", price: "" });
@@ -24,6 +25,14 @@ export default function AdminProductsPage() {
   }>>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "true") {
+      createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const firstInput = createFormRef.current?.querySelector<HTMLInputElement>("input");
+      firstInput?.focus();
+    }
+  }, []);
 
   async function run(fn: () => Promise<unknown>, msg?: string) {
     setBusy(true);
@@ -125,6 +134,8 @@ export default function AdminProductsPage() {
       {notice && <p className="muted">{notice}</p>}
 
       <form
+        ref={createFormRef}
+        id="crear-producto"
         className="form card"
         style={{ maxWidth: "none" }}
         onSubmit={(e) => {

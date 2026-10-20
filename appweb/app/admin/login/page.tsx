@@ -2,31 +2,15 @@
 
 import { useState, FormEvent, ChangeEvent } from "react";
 import { authService, type SendOtpResponse } from "@/services/auth.service";
-import clsx from "clsx";
+import { Days_One } from "next/font/google";
 
-function LogoIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 16L12 8l8 8-8 8"></path>
-      <path d="M16 8v16"></path>
-      <circle cx="24" cy="16" r="6"></circle>
-    </svg>
-  );
-}
+const daysOne = Days_One({ weight: "400", subsets: ["latin"], display: "swap", variable: "--font-days-one" });
 
-function PhoneIcon({ className }: { className?: string }) {
+function MailIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-    </svg>
-  );
-}
-
-function LockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
     </svg>
   );
 }
@@ -59,26 +43,18 @@ function AlertIcon({ className }: { className?: string }) {
 }
 
 export default function AdminLoginPage() {
-  const [step, setStep] = useState<"phone" | "code">("phone");
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
-  const [sentPhone, setSentPhone] = useState("");
+  const [sentEmail, setSentEmail] = useState("");
+  const [demoCode, setDemoCode] = useState<string | null>(null);
 
-  const formatPhone = (value: string) => {
-    const digits = value.replace(/\D/g, "");
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-    if (digits.length <= 10) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
-    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 10)}`;
-  };
-
-  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
-    setPhone(formatted);
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value.trim());
   };
 
   const handleCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -104,17 +80,18 @@ export default function AdminLoginPage() {
     setError(null);
     setSuccess(null);
 
-    const digitsOnly = phone.replace(/\D/g, "");
-    if (digitsOnly.length !== 10) {
-      setError("Ingresa un número de celular válido (10 dígitos)");
+    const normalized = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      setError("Ingresa un correo válido");
       return;
     }
 
     setLoading(true);
     try {
-      const res: SendOtpResponse = await authService.sendOtp(digitsOnly);
+      const res: SendOtpResponse = await authService.sendOtp(normalized);
       setSuccess(res.message || "Código enviado correctamente");
-      setSentPhone(phone);
+      setDemoCode(res.code ?? null);
+      setSentEmail(normalized);
       setStep("code");
       startCountdown();
     } catch (err) {
@@ -128,7 +105,6 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError(null);
 
-    const digitsOnly = sentPhone.replace(/\D/g, "");
     if (code.length !== 6) {
       setError("Ingresa el código de 6 dígitos");
       return;
@@ -136,7 +112,7 @@ export default function AdminLoginPage() {
 
     setLoading(true);
     try {
-      await authService.verifyOtp(digitsOnly, code);
+      await authService.verifyOtp(sentEmail, code);
       window.location.href = "/admin/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Código inválido o expirado");
@@ -146,10 +122,11 @@ export default function AdminLoginPage() {
   };
 
   const handleBack = () => {
-    setStep("phone");
+    setStep("email");
     setCode("");
     setError(null);
     setSuccess(null);
+    setDemoCode(null);
   };
 
   const handleResend = async () => {
@@ -158,9 +135,9 @@ export default function AdminLoginPage() {
     setSuccess(null);
     setLoading(true);
     try {
-      const digitsOnly = sentPhone.replace(/\D/g, "");
-      const res: SendOtpResponse = await authService.sendOtp(digitsOnly);
+      const res: SendOtpResponse = await authService.sendOtp(sentEmail);
       setSuccess(res.message || "Código reenviado correctamente");
+      setDemoCode(res.code ?? null);
       startCountdown();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al reenviar código");
@@ -170,44 +147,37 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="admin-login-page">
+    <div className={`admin-login-page ${daysOne.variable}`}>
       <div className="login-container">
-        <div className="login-brand">
-          <LogoIcon className="login-logo" aria-hidden="true" />
-          <h1>Importify Admin</h1>
-          <p>Panel de administración</p>
-        </div>
-
         <div className="login-card">
-          {step === "phone" ? (
+          {step === "email" ? (
             <form onSubmit={handleSendOtp} className="login-form" noValidate>
               <div className="form-header">
-                <h2>Iniciar sesión</h2>
-                <p>Ingresa tu número de celular para recibir un código de verificación</p>
+                <h2>Panel Administrador</h2>
+                <p>Ingresa tu correo para recibir un código de verificación</p>
               </div>
 
               {error && <div className="alert alert-error" role="alert"><AlertIcon /><span>{error}</span></div>}
               {success && <div className="alert alert-success" role="status"><CheckIcon /><span>{success}</span></div>}
 
               <div className="form-field">
-                <label htmlFor="phone" className="field-label">
-                  <PhoneIcon className="field-icon" aria-hidden="true" />
-                  <span>Número de celular</span>
+                <label htmlFor="email" className="field-label">
+                  <span>Correo electrónico</span>
                 </label>
                 <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  placeholder="300 123 4567"
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="admin@importify.com"
                   className="field-input"
                   required
-                  autoComplete="tel"
+                  autoComplete="email"
                   disabled={loading}
-                  aria-describedby="phone-hint"
+                  aria-describedby="email-hint"
                 />
-                <p id="phone-hint" className="field-hint">Te enviaremos un código de 6 dígitos por SMS</p>
+                <p id="email-hint" className="field-hint">Te enviaremos un código de 6 dígitos a tu correo</p>
               </div>
 
               <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
@@ -219,11 +189,17 @@ export default function AdminLoginPage() {
             <form onSubmit={handleVerifyOtp} className="login-form" noValidate>
               <div className="form-header">
                 <h2>Verificar código</h2>
-                <p>Hemos enviado un código de 6 dígitos a <strong>{sentPhone}</strong></p>
+                <p>Hemos enviado un código de 6 dígitos a <strong>{sentEmail}</strong></p>
               </div>
 
               {error && <div className="alert alert-error" role="alert"><AlertIcon /><span>{error}</span></div>}
               {success && <div className="alert alert-success" role="status"><CheckIcon /><span>{success}</span></div>}
+              {demoCode && (
+                <div className="alert alert-success" role="status">
+                  <CheckIcon />
+                  <span>Modo demo: usa el código <strong>{demoCode}</strong></span>
+                </div>
+              )}
 
               <div className="code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
                 {[...Array(6)].map((_, i) => (
@@ -257,7 +233,7 @@ export default function AdminLoginPage() {
 
               <div className="form-actions">
                 <button type="button" className="btn btn-ghost" onClick={handleBack} disabled={loading}>
-                  ← Cambiar número
+                  ← Cambiar correo
                 </button>
                 <button type="button" className="btn btn-outline" onClick={handleResend} disabled={loading || countdown > 0}>
                   {countdown > 0 ? `Reenviar en ${countdown}s` : "Reenviar código"}
@@ -283,12 +259,6 @@ export default function AdminLoginPage() {
             <span>Volver a la tienda</span>
           </a>
         </div>
-      </div>
-
-      <div className="login-bg" aria-hidden="true">
-        <div className="bg-shape shape-1"></div>
-        <div className="bg-shape shape-2"></div>
-        <div className="bg-shape shape-3"></div>
       </div>
     </div>
   );

@@ -43,8 +43,9 @@ export default function CarritoPage() {
     setSelected(new Set(cartItems.map((i) => i.product.slug)));
   }
 
-  const subtotal = cartItems.reduce((sum, i) => sum + i.subtotal, 0);
-  const shipping = subtotal > 0 ? 15000 : 0;
+  const selectedItems = cartItems.filter((i) => selected.has(i.product.slug));
+  const subtotal = selectedItems.reduce((sum, i) => sum + i.subtotal, 0);
+  const shipping = cartItems.length > 0 ? 15000 : 0;
   const tax = Math.round(subtotal * 0.19);
   const total = subtotal + shipping + tax;
 
@@ -79,18 +80,47 @@ export default function CarritoPage() {
             <div className="cart-layout">
               <div>
                 <div className="cart-head">
-                  <span className="cart-head-check"><input type="checkbox" checked={allSelected} onChange={toggleSelectAll} /></span>
+                  <span className="cart-head-check">
+                    <label className="cart-card-checkbox-wrapper">
+                      <input
+                        type="checkbox"
+                        className="cart-card-checkbox-input"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                      />
+                      <span className="cart-card-checkbox-box" aria-hidden="true">
+                        <svg className="cart-card-checkbox-unchecked" viewBox="0 0 94 91" fill="none" width="22" height="22">
+                          <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" stroke="#7688F8" strokeWidth="10" />
+                        </svg>
+                        <svg className="cart-card-checkbox-checked" viewBox="0 0 94 91" fill="none" width="22" height="22">
+                          <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" fill="#7688F8" />
+                          <polyline points="30 45 42 57 64 33" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                    </label>
+                  </span>
                   <span className="cart-head-select">Todos</span>
                 </div>
                 {cartItems.map((item) => (
                   <div key={item.product.slug} className="cart-card">
-                    <input
-                      type="checkbox"
-                      className="cart-card-checkbox"
-                      checked={selected.has(item.product.slug)}
-                      onChange={() => toggleSelect(item.product.slug)}
-                    />
                     <div className="cart-card-media">
+                      <label className="cart-card-checkbox-wrapper">
+                        <input
+                          type="checkbox"
+                          className="cart-card-checkbox-input"
+                          checked={selected.has(item.product.slug)}
+                          onChange={() => toggleSelect(item.product.slug)}
+                        />
+                        <span className="cart-card-checkbox-box" aria-hidden="true">
+                          <svg className="cart-card-checkbox-unchecked" viewBox="0 0 94 91" fill="none" width="22" height="22">
+                            <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" stroke="#7688F8" strokeWidth="10" />
+                          </svg>
+                          <svg className="cart-card-checkbox-checked" viewBox="0 0 94 91" fill="none" width="22" height="22">
+                            <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" fill="#7688F8" />
+                            <polyline points="30 45 42 57 64 33" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      </label>
                       <Image
                         src={item.product.image}
                         alt={item.product.name}
@@ -114,24 +144,41 @@ export default function CarritoPage() {
                           onClick={() => handleRemove(item.product.slug)}
                           aria-label="Eliminar"
                         >
-                          🗑
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
                         </button>
                       </div>
                       <div className="cart-card-bottom">
                         <div className="cart-card-price">{formatCOP(item.product.price)}</div>
                         <div className="cart-card-qty">
                           <button
-                            className="cart-card-qty-btn"
+                            className="cart-card-qty-btn cart-card-qty-btn-minus"
                             onClick={() => handleUpdateQty(item.product.slug, item.qty - 1)}
+                            aria-label="Disminuir cantidad"
                           >
-                            −
+                            <Image
+                              src="/images/carrito/signo--carrito.svg"
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="cart-card-qty-icon"
+                            />
                           </button>
                           <span className="cart-card-qty-value">{item.qty}</span>
                           <button
-                            className="cart-card-qty-btn"
+                            className="cart-card-qty-btn cart-card-qty-btn-plus"
                             onClick={() => handleUpdateQty(item.product.slug, item.qty + 1)}
+                            aria-label="Aumentar cantidad"
                           >
-                            +
+                            <Image
+                              src="/images/carrito/signo+-carrito.svg"
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="cart-card-qty-icon"
+                            />
                           </button>
                         </div>
                       </div>

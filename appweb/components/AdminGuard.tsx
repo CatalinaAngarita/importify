@@ -7,19 +7,20 @@ import { ApiState } from "@/components/ApiState";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-/** Protege /admin: JWT + rol ADMIN (verificado contra GET /auth/me). */
+/** Protege /admin: JWT + rol ADMIN o SUPERADMIN (verificado contra GET /auth/me). */
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data: me, status, error, reload } = useApi(() =>
-    authService.me<{ roleName?: string; role?: string; email?: string; phone?: string }>(),
+    authService.me<{ roleName?: string; role?: string; email?: string }>(),
   );
   const role = (me?.roleName ?? me?.role ?? "").toUpperCase();
+  const allowed = role === "ADMIN" || role === "SUPERADMIN";
 
   useEffect(() => {
-    if (status === "error" || (status === "success" && role !== "ADMIN")) {
+    if (status === "error" || (status === "success" && !allowed)) {
       router.replace("/admin/login");
     }
-  }, [status, role, router]);
+  }, [status, allowed, router]);
 
   if (status === "loading" || status === "idle") {
     return (
@@ -34,7 +35,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       </main>
     );
   }
-  if (status === "error" || role !== "ADMIN") {
+  if (status === "error" || !allowed) {
     return null;
   }
   return <>{children}</>;

@@ -4,14 +4,14 @@ import Image from "next/image";
 import { useState } from "react";
 
 const ITEMS = [
-  { name: "Aro de Luz I8", description: "Aro de luz profesional para fotos y videos.", image: "/images/products/Tecnologicos/aro-luz-I8.png" },
-  { name: "Proyector Android", description: "Cine en casa con Android integrado.", image: "/images/products/Tecnologicos/proyector-android.png" },
-  { name: "Audífonos Personales", description: "Audio nítido y comodidad todo el día.", image: "/images/products/Tecnologicos/audifonos-personales.png" },
-  { name: "Malumeta", description: "Herramienta eléctrica profesional.", image: "/images/products/Eléctricos/Malumeta.png" },
-  { name: "Xiam Pro", description: "Potencia y precisión en tus manos.", image: "/images/products/Eléctricos/Xiam-pro.png" },
-  { name: "Brocha y arancela de maquillaje", description: "Set profesional para maquillaje perfecto.", image: "/images/products/Belleza/Brocha y arancela de maquillaje.png" },
-  { name: "Depilador de dama", description: "Depilación suave, rápida y duradera.", image: "/images/products/Belleza/Depilador-de-dama.png" },
-  { name: "Maquina Hair Clipper", description: "Corte profesional en casa.", image: "/images/products/Belleza/Maquina-Hair-Clipper.png" },
+  { name: "Aro de Luz I8", description: "Aro de luz profesional para fotos y videos.", image: "/images/products/tecnologia/aro-luz-I8-nobg.png" },
+  { name: "Proyector Android", description: "Cine en casa con Android integrado.", image: "/images/products/tecnologia/proyector-android-nobg.png" },
+  { name: "Audífonos Personales", description: "Audio nítido y comodidad todo el día.", image: "/images/products/tecnologia/audifonos-personales-nobg.png" },
+  { name: "Malumeta", description: "Herramienta eléctrica profesional.", image: "/images/products/Eléctricos/Malumeta-nobg.png" },
+  { name: "Xiam Pro", description: "Potencia y precisión en tus manos.", image: "/images/products/Eléctricos/Xiam-pro-nobg.png" },
+  { name: "Brocha y arancela de maquillaje", description: "Set para maquillaje perfecto.", image: "/images/products/Belleza/Brocha y arancela de maquillaje-nobg.png" },
+  { name: "Depilador de dama", description: "Depilación suave, rápida y duradera.", image: "/images/products/Belleza/Depilador-de-dama-nobg.png" },
+  { name: "Maquina Hair Clipper", description: "Corte profesional en casa.", image: "/images/products/Belleza/Maquina-Hair-Clipper-nobg.png" },
 ];
 
 export function BestSellersCarousel() {
