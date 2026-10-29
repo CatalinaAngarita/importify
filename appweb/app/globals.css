@@ -305,8 +305,8 @@ a { color: inherit; }
 .contact-page { background: var(--bg); }
 .contact-hero { position: relative; min-height: 48rem; overflow: hidden; background: var(--bg); }
 .contact-content { position: relative; z-index: 2; max-width: 56rem; margin: 0 auto; padding: 5.4rem 1.5rem 6rem; }
-.contact-heading { color: var(--dark); text-align: center; }
-.contact-heading h1, .contact-heading p { margin: 0; font-weight: 900; letter-spacing: .025em; }
+.contact-heading { color: #200332; text-align: center; font-family: "Days One", "Arial Black", sans-serif; font-weight: 400; }
+.contact-heading h1, .contact-heading p { margin: 0; font-weight: 400; letter-spacing: .025em; }
 .contact-heading h1 { font-size: clamp(1.45rem, 2.1vw, 2.15rem); }
 .contact-heading p { margin-top: .25rem; font-size: clamp(.9rem, 1.25vw, 1.15rem); }
 .contact-form { margin: 2.4rem auto 0; max-width: 50rem; padding: 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; border-radius: 2.2rem; background: var(--dark); }
@@ -327,8 +327,7 @@ a { color: inherit; }
 .contact-submit { grid-column: 1 / -1; min-height: 4rem; border: 0; border-radius: .75rem; cursor: pointer; background: var(--primary); color: #fff; font: inherit; font-size: 1.15rem; font-weight: 900; letter-spacing: .035em; }
 .contact-submit:hover { background: #6277e8; }
 .contact-success { grid-column: 1 / -1; margin: 0; color: #d9e0ff; font-size: .78rem; text-align: center; }
-.contact-person { position: absolute; z-index: 1; width: min(37vw, 36rem); height: 30rem; right: max(2vw, calc((100% - 107rem) / 2)); bottom: 0; background: right bottom / contain no-repeat url("/images/contacto/asesor-contacto.png"); pointer-events: none; }
-.contact-person::before { content: ""; position: absolute; z-index: -1; width: 83%; height: 83%; right: 0; bottom: -9%; background: #d6defd; border-radius: 48% 48% 0 0; }
+.contact-person { position: absolute; z-index: 3; width: min(48vw, 46rem); height: 38rem; right: max(1.5vw, calc((100% - 104rem) / 2)); bottom: 0; background: right bottom / contain no-repeat url("/images/contacto/svg1-contacto.svg"); pointer-events: none; }
 .faq-section { max-width: 1100px; margin: 0 auto; padding: 5.5rem 1.5rem 6.5rem; }
 .faq-section h2 { width: max-content; max-width: 100%; margin: 0 auto 4rem; padding-bottom: .8rem; border-bottom: 3px solid var(--primary); color: var(--dark); font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 900; letter-spacing: .025em; text-align: center; }
 .faq-list { display: grid; gap: 1.1rem; }

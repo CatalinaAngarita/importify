@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+﻿import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshDto } from "./dto/refresh.dto";
+import { SendOtpDto } from "./dto/send-otp.dto";
+import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import { Public, Roles } from "./decorators";
 import { Throttle } from "../common/throttle.decorator";
 import { JwtAuthGuard } from "./jwt-auth.guard";
@@ -49,9 +51,24 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("ADMIN")
-  @Get("admin-ping")
+  @Roles("ADMIN", "SUPERADMIN")
+  @Get('admin-ping')
   adminPing() {
-    return { ok: true, scope: "ADMIN" };
+    return { ok: true, scope: 'ADMIN' };
   }
+
+  @Public()
+  @Throttle(5)
+  @Post('send-otp')
+  sendOtp(@Body() dto: SendOtpDto) {
+    return this.auth.sendOtp(dto.email);
+  }
+
+  @Public()
+  @Throttle(5)
+  @Post('verify-otp')
+  verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.auth.verifyOtp(dto.email, dto.code);
+  }
+
 }

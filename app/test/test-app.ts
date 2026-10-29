@@ -1,12 +1,14 @@
+import "dotenv/config";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
-import { Test } from "@nestjs/testing";import { randomUUID } from "crypto";
-import { drizzle } from "drizzle-orm/node-postgres";
-import * as fs from "fs";
+import { Test } from "@nestjs/testing";
+import { randomUUID } from "crypto";
+import { drizzle, type MySql2Database } from "drizzle-orm/mysql2";
+import { migrate } from "drizzle-orm/mysql2/migrator";
+import mysql from "mysql2/promise";
 import * as path from "path";
-import { newDb } from "pg-mem";
 import { ThrottleGuard } from "../src/common/throttle.guard";
 import { DATABASE, DatabaseModule } from "../src/database/database.module";
 import * as schema from "../src/database/schema";
@@ -67,95 +69,49 @@ export class FakePaymentProvider {
 
 export interface TestContext {
   app: INestApplication;
-  db: ReturnType<typeof drizzle<typeof schema>>;
+  db: MySql2Database<typeof schema>;
   provider: FakePaymentProvider;
 }
 
+const TABLES = [
+  "payments",
+  "order_items",
+  "orders",
+  "cart_items",
+  "carts",
+  "inventory_movements",
+  "product_images",
+  "products",
+  "categories",
+  "users",
+  "roles",
+  "auth_otps",
+];
+
 export async function createTestApp(): Promise<TestContext> {
-  // PostgreSQL en memoria con las migraciones REALES del proyecto.
-  const mem = newDb();
-  mem.public.registerFunction({
-    name: "gen_random_uuid",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    returns: "uuid" as any,
-    impure: true,
-    implementation: () => randomUUID(),
-  });
-  const files = fs
-    .readdirSync(path.join(__dirname, "..", "drizzle"))
-    .filter((f) => f.endsWith(".sql"))
-    .sort();
-  for (const f of files) {
-    const sql = fs.readFileSync(path.join(__dirname, "..", "drizzle", f), "utf8");
-    for (const stmt of sql.split("--> statement-breakpoint")) {
-      if (stmt.trim()) await mem.public.query(stmt);
-    }
+  const url = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("TEST_DATABASE_URL (o DATABASE_URL) debe apuntar a una base MySQL/MariaDB de pruebas");
   }
-  const pg = mem.adapters.createPg();
-  // pg-mem no soporta `types.getTypeParser` (que drizzle node-postgres envía)
-  // ni LIMIT/OFFSET parametrizados: se normaliza el query config e interpola
-  // valores (el SQL ejecutado sigue siendo el real del proyecto).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const normalize = (q: any) => {
-    if (!q || typeof q !== "object") return q;
-    q = { ...q };
-    delete q.types;
-    if (Array.isArray(q.values) && typeof q.text === "string") {
-      const values: unknown[] = [...q.values];
-      const drop = new Set<number>();
-      q.text = q.text.replace(/(limit|offset)\s+\$(\d+)/gi, (_m: string, kw: string, n: string) => {
-        const idx = Number(n) - 1;
-        const v = values[idx];
-        if (Number.isInteger(v)) {
-          drop.add(idx);
-          return `${kw} ${v}`;
-        }
-        return _m;
-      });
-      if (drop.size > 0) {
-        const map = new Map<number, number>();
-        const kept: unknown[] = [];
-        values.forEach((v, i) => {
-          if (!drop.has(i)) {
-            map.set(i + 1, kept.length + 1);
-            kept.push(v);
-          }
-        });
-        q.values = kept;
-        q.text = q.text.replace(/\$(\d+)/g, (_m: string, n: string) => `$${map.get(Number(n)) ?? n}`);
-      }
-    }
-    return q;
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wrapClient = (client: any) => {
-    const origQuery = client.query.bind(client);
-    client.query = async (q: unknown, v?: unknown) => {
-      const nq = normalize(q);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const wantsArray = (nq as any)?.rowMode === "array";
-      if (wantsArray) delete (nq as Record<string, unknown>).rowMode;
-      const res = await origQuery(nq, v);
-      if (wantsArray && Array.isArray(res?.rows)) {
-        // pg-mem no soporta rowMode=array: se convierten las filas-objeto
-        // a arreglos en el orden de proyección (igual que el driver pg).
-        res.rows = res.rows.map((r: unknown) =>
-          Array.isArray(r) ? r : Object.values(r as Record<string, unknown>),
-        );
-      }
-      return res;
-    };
-    return client;
-  };
-  const rawPool = new pg.Pool();
-  const tmp = wrapClient({ query: rawPool.query.bind(rawPool) });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (rawPool as any).query = tmp.query;
-  const origConnect = rawPool.connect.bind(rawPool);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (rawPool as any).connect = async (...args: any[]) => wrapClient(await origConnect(...args));
-  const pool = rawPool;
-  const db = drizzle(pool, { schema });
+
+  const pool = mysql.createPool({
+    uri: url,
+    connectionLimit: 5,
+    waitForConnections: true,
+    charset: "utf8mb4",
+    timezone: "Z",
+  });
+
+  // Migraciones REALES del proyecto sobre la base de pruebas.
+  const db = drizzle(pool, { schema, mode: "default" });
+  await migrate(db, { migrationsFolder: path.join(__dirname, "..", "drizzle") });
+
+  // Aislamiento entre suites: vaciar todas las tablas.
+  await pool.query("SET FOREIGN_KEY_CHECKS = 0");
+  for (const table of TABLES) {
+    await pool.query(`TRUNCATE TABLE \`${table}\``);
+  }
+  await pool.query("SET FOREIGN_KEY_CHECKS = 1");
 
   // Roles reales requeridos por el dominio.
   await db.insert(schema.roles).values([{ name: "ADMIN" }, { name: "CUSTOMER" }]);

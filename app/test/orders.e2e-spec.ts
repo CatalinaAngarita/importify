@@ -70,6 +70,10 @@ describe("Carrito + Checkout + Pedidos + Inventario (e2e real)", () => {
     expect(Number(order.shippingCost)).toBe(12000);
     expect(Number(order.total)).toBe(192000);
     expect(res.body.payment.status).toBe("PENDING");
+    await srv().get("/api/orders").expect(401);
+    await srv().get(`/api/orders/${order.id}`).expect(401);
+    const fetched = await srv().get(`/api/orders/${order.id}`).set(admin()).expect(200);
+    expect(fetched.body.id).toBe(order.id);
     // Stock 5 → 3.
     const prod = (await srv().get("/api/products/slug/mouse").expect(200)).body;
     expect(prod.stock).toBe(3);

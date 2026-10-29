@@ -7,6 +7,6 @@ export const checkoutService = {
     discountCode?: string;
     shippingAddress: Record<string, unknown>;
   }) {
-    return apiPost<{ order: { id: string }; payment: unknown }>("/checkout", data);
+    return apiPost<{ order: { id: string }; payment: unknown }>("/checkout", data, true);
   },
 };

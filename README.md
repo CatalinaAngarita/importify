@@ -35,7 +35,7 @@ Construir por etapas un e-commerce funcional, limpio y desplegable con Docker: c
 | ---- | ---------- |
 | `app` | NestJS, TypeScript |
 | `appweb` | Next.js, React, TypeScript |
-| Base de datos | PostgreSQL 16 |
+| Base de datos | MariaDB 11.4 (compatible MySQL) |
 | ORM | Drizzle ORM |
 | Infraestructura | Docker, Docker Compose |
 | Pagos | Wompi (Colombia) |
@@ -43,7 +43,7 @@ Construir por etapas un e-commerce funcional, limpio y desplegable con Docker: c
 ## Arquitectura
 
 ```
-appweb (Next.js) ──HTTP/REST──> app (NestJS) ──Drizzle──> PostgreSQL
+appweb (Next.js) ──HTTP/REST──> app (NestJS) ──Drizzle──> MariaDB/MySQL
                                          └──> Wompi (pagos)
 ```
 
@@ -69,7 +69,7 @@ importify/
 │   │   ├── payments/     # intent, webhook, providers/wompi
 │   │   ├── products/     # productos
 │   │   └── users/        # usuarios (solo ADMIN lista)
-│   ├── drizzle/          # 6 migraciones SQL + meta/_journal
+│   ├── drizzle/          # migración base MySQL + meta/_journal
 │   ├── test/             # harness + 4 suites e2e (Etapa 20)
 │   ├── Dockerfile
 │   └── .dockerignore
@@ -125,13 +125,16 @@ Ver `.env.example`. Nunca commitear `.env` ni secretos reales.
 
 | Variable | Uso |
 | -------- | --- |
-| `POSTGRES_USER` | Usuario PostgreSQL |
-| `POSTGRES_PASSWORD` | Contraseña PostgreSQL (solo local) |
-| `POSTGRES_DB` | Nombre de la base de datos |
-| `POSTGRES_PORT` | Puerto publicado (5432) |
+| `MYSQL_ROOT_PASSWORD` | Contraseña root de MariaDB (solo local) |
+| `MYSQL_USER` | Usuario de la base de datos |
+| `MYSQL_PASSWORD` | Contraseña del usuario (solo local) |
+| `MYSQL_DATABASE` | Nombre de la base de datos |
+| `MYSQL_PORT` | Puerto publicado (3306) |
 | `DATABASE_URL` | Conexión usada por Drizzle en `app` (compose inyecta host `db`) |
-| `APP_PORT` | Puerto de `app` (3001) |
+| `TEST_DATABASE_URL` | Base MySQL/MariaDB para las suites e2e (se vacía en cada ejecución) |
+| `APP_PORT` | Puerto local de `app` (3001); en Hostinger se usa `PORT` |
 | `APPWEB_PORT` | Puerto de `appweb` (3000) |
+| `RUN_MIGRATIONS_ON_START` | `true` aplica migraciones al arrancar `app` (por defecto en producción) |
 | `NEXT_PUBLIC_API_URL` | URL de la API para el navegador (`http://localhost:3001/api`) |
 | `CORS_ORIGINS` | Orígenes permitidos, separados por coma |
 | `JWT_SECRET` | Secreto JWT (obligatorio en producción) |
@@ -145,7 +148,7 @@ Ver `.env.example`. Nunca commitear `.env` ni secretos reales.
 
 ## Ejecución local
 
-### PostgreSQL (servicio `db`)
+### MariaDB (servicio `db`)
 
 ```powershell
 # Levantar
@@ -154,13 +157,13 @@ docker compose up -d db
 
 # Verificar estado y salud
 docker compose ps
-docker exec importify-db pg_isready -U importify
+docker exec importify-db healthcheck.sh --connect --innodb_initialized
 
 # Revisar logs
 docker compose logs db --tail 50
 docker compose logs -f db  # seguir en vivo
 
-# Detener (conserva datos en volumen pgdata)
+# Detener (conserva datos en volumen mariadbdata)
 docker compose stop db
 # Detener y eliminar contenedor (conserva volumen)
 docker compose down
@@ -181,35 +184,40 @@ npm run start:dev  # http://localhost:3001/api/health
 ## `appweb` (diseño + conexión)
 
 Next.js 14 + React 18 + TS. Identidad azul/lila sobre morado oscuro, tarjetas
-redondeadas, responsive. Todo visual con **datos mock** (`services/catalog.mock.ts`,
-pool único de 12 productos sin repetir entre secciones).
+redondeadas, responsive. La vitrina toma productos y categorías de la API/DB;
+`services/catalog.mock.ts` solo aporta metadatos visuales (emoji, rating, vendidos)
+y sirve de respaldo de imágenes. `services/catalog.service.ts` centraliza el mapeo
+API → UI y la resolución de imágenes.
 
 - Header global: logo, buscador (→ `/productos?q=`), carrito con contador,
   Inicio, Productos, Quiénes somos (`/#nosotros`), Contacto (`/#contacto`), login.
-- Home `/`: hero, categorías, beneficios, destacados, más vendidos, quiénes somos, testimonios.
-- Rutas: `/productos` (filtro por categoría + búsqueda), `/productos/[slug]`
-  (detalle + relacionados), `/carrito`, `/login`, `/registro`, `/checkout`
-  (pasos + resumen), `/mi-cuenta` (pedidos mock).
+- Home `/`: hero, categorías, beneficios, destacados y más vendidos desde API,
+  quiénes somos, testimonios.
+- Rutas: `/productos` (filtro por categoría + búsqueda, 50 productos API),
+  `/productos/[slug]` (detalle + relacionados API), `/carrito` (carrito API/DB),
+  `/login`, `/registro`, `/checkout` (checkout API), `/mi-cuenta` (pedidos API).
 - Componentes reutilizables en `components/`: `Container`, `Header`, `Footer`,
   `SectionTitle`, `CategoryCard`, `ProductCard`, `BenefitCard`, `TestimonialCard`,
   `ApiState` (loading/error/empty).
-- Home `/` y detalle `/productos/[slug]` siguen con mocks visuales.
 
 ## `appweb` conectada a `app`
 
 - Servicios en `appweb/services/`: `api.ts` (cliente central, token en
   localStorage, `ApiError`), `auth.service.ts` (register/login/me), `products`,
-  `categories`, `cart` (carrito persistido en localStorage), `orders`,
-  `checkout`, `payments`. Tipos en `types/api.ts`. Base única
-  `NEXT_PUBLIC_API_URL` (ver `appweb/.env.example`); ningún componente repite URLs.
+  `categories`, `cart` (carrito persistido en API/DB), `orders`,
+  `checkout`, `payments`, `catalog.service.ts` (API → UI). Tipos en
+  `types/api.ts`. Base única `NEXT_PUBLIC_API_URL` (ver `appweb/.env.example`);
+  ningún componente repite URLs.
 - Hook `hooks/useApi.ts`: estados `idle|loading|success|error|empty` + `reload`.
-- Páginas conectadas: `/productos` (API + fallback a mocks si no hay conexión),
-  `/carrito` (ver/cantidad/eliminar/vaciar), `/checkout` (checkout → intent de
-  pago Wompi → `/mi-cuenta`), `/mi-cuenta` (pedidos API, requiere login),
-  `/login` y `/registro` (token real).
+- Páginas conectadas: `/productos` (API/DB), `/productos/[slug]` (API/DB),
+  `/carrito` (API/DB; totales alineados con backend), `/checkout` (checkout →
+  intent de pago Wompi → `/mi-cuenta`), `/mi-cuenta` (pedidos API, requiere
+  login), `/login` y `/registro` (token real). `next.config.mjs` reescribe
+  `/uploads/*` hacia la API para imágenes subidas desde admin.
 - Panel `/admin` (Etapa 17, solo ADMIN vía `AdminGuard` + `GET /auth/me`):
   `dashboard` (ventas aprobadas, pedidos por estado, stock bajo, agotados),
-  `products` (crear, activar/desactivar), `categories` (crear, activar/desactivar),
+  `products` (crear/editar con categoría, stock, precio anterior, destacado,
+  más vendido y activo), `categories` (crear, activar/desactivar),
   `inventory` (entradas, salidas, ajustes, historial), `orders` (consultar,
   cambiar estado), `customers` (consulta). Servicios `admin.service.ts`
   (`/admin/stats`, `/users`) e `inventory.service.ts` con JWT.
@@ -226,7 +234,7 @@ healthchecks con `depends_on`:
 
 | Servicio | Imagen / build | Puerto | Healthcheck | Depende de |
 | -------- | -------------- | ------ | ----------- | ---------- |
-| `db` | `postgres:16-alpine` | 5432 | `pg_isready` | — |
+| `db` | `mariadb:11.4` | 3306 | `healthcheck.sh` | — |
 | `app` | `app/Dockerfile` (Node 20, build TS, migra + inicia) | 3001 | `GET /api/health` | `db` saludable |
 | `appweb` | `appweb/Dockerfile` (Node 20, build Next) | 3000 | `GET /` | `app` saludable |
 
@@ -235,7 +243,7 @@ healthchecks con `depends_on`:
   dependencia de producción) y luego `node dist/main.js`.
 - `appweb` recibe `NEXT_PUBLIC_API_URL` como build-arg y variable (navegador →
   `http://localhost:3001/api`).
-- Volumen `pgdata` persistente: `docker compose down` NO borra datos (solo
+- Volumen `mariadbdata` persistente: `docker compose down` NO borra datos (solo
   `down -v` los elimina).
 
 ```powershell
@@ -243,7 +251,7 @@ Copy-Item .env.example .env  # solo primera vez
 docker compose up -d --build # levanta db + app + appweb (modo producción)
 docker compose ps            # estado y salud
 docker compose logs -f app   # logs (db | appweb)
-docker compose down          # detiene y conserva datos (pgdata intacto)
+docker compose down          # detiene y conserva datos (mariadbdata intacto)
 docker compose down -v       # cuidado: borra también los datos
 ```
 
@@ -266,14 +274,15 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 ## Base de datos
 
-- PostgreSQL 16 en servicio `db` (puerto 5432, volumen persistente `pgdata`).
+- MariaDB 11.4 en servicio `db` (puerto 3306, volumen persistente `mariadbdata`).
 - `app` es la única con acceso directo.
 - Esquemas en `app/src/database/schema/`: `users.ts` (roles, users),
   `catalog.ts` (categories, products, productImages), `inventory.ts`
   (inventoryMovements), `cart.ts` (carts, cartItems), `order.ts` (orders,
-  orderItems), `payment.ts` (payments). UUID PK `defaultRandom()`, FKs con
-  `ON DELETE CASCADE` / `SET NULL` según dominio, uniques, índices,
-  `created_at/updated_at` con `defaultNow()`.
+  orderItems), `payment.ts` (payments). UUID PK `char(36)` generado en la app
+  (`randomUUID()`), FKs con `ON DELETE CASCADE` / `SET NULL` según dominio,
+  uniques, índices, `created_at/updated_at` con `CURRENT_TIMESTAMP`.
+  `json` se usa para direcciones y respuestas crudas de Wompi.
 
 ### Conexión en DBeaver (desarrollo local)
 
@@ -281,34 +290,33 @@ Proyecto levantado con: `docker compose up -d db` (contenedor `importify-db`, he
 
 | Campo | Valor |
 | ----- | ----- |
-| Tipo | PostgreSQL |
+| Tipo | MariaDB / MySQL |
 | Nombre | `importify-local` |
 | Host | `localhost` |
-| Puerto | `5432` |
+| Puerto | `3306` |
 | Base de datos | `importify` |
 | Usuario | `importify` |
-| Contraseña | `123` (solo local, ver `.env`) |
-| URL JDBC | `jdbc:postgresql://localhost:5432/importify` |
+| Contraseña | `importify` (solo local, ver `.env`) |
+| URL JDBC | `jdbc:mysql://localhost:3306/importify` |
 
-Pasos: DBeaver → Nueva conexión → PostgreSQL → ingresar datos → Test Connection → Finalizar.
+Pasos: DBeaver → Nueva conexión → MySQL → ingresar datos → Test Connection → Finalizar.
 Archivo de referencia para importar: `database/dbeaver-importify-local.json`.
 
 ## Migraciones
 
-Viven en `app/drizzle/` (6 archivos + `meta/_journal.json`).
+Viven en `app/drizzle/` (1 migración base + `meta/_journal.json`).
 
 | Migración | Contenido |
 | --------- | --------- |
-| `0000_legal_nick_fury` | roles, users, categories, product_images, products |
-| `0001_add-refresh-token` | `users.refresh_token_hash` |
-| `0002_cultured_moira_mactaggert` | `inventory_movements` + enum |
-| `0003_skinny_barracuda` | `carts`, `cart_items` |
-| `0004_famous_silverclaw` | `orders`, `order_items` + enums |
-| `0005_grey_shadowcat` | `payments` + enum |
+| `0000_special_lilandra` | todas las tablas, enums, FKs e índices del dominio |
+
+La carpeta `app/drizzle-postgres-backup/` conserva las migraciones históricas de
+PostgreSQL (solo referencia; no se aplican). La base MySQL/MariaDB se crea desde
+cero con la migración `0000_special_lilandra`.
 
 ```powershell
 Set-Location app
-$env:DATABASE_URL="postgresql://importify:123@localhost:5432/importify"
+$env:DATABASE_URL="mysql://importify:importify@localhost:3306/importify"
 npm run drizzle:generate  # tras cambiar el schema
 npm run drizzle:migrate   # aplicar (el contenedor app lo hace al arrancar)
 npm run drizzle:studio
@@ -327,7 +335,7 @@ paginadas `{ data, meta: { total, page, limit, pages } }`.
 | Categorías | `GET /api/categories`, `/:id`; `POST/PATCH/DELETE` solo ADMIN |
 | Inventario | `GET /api/inventory/movements`; `POST .../increase\|decrease`, `PATCH .../adjust` (solo ADMIN) |
 | Carrito | `POST/GET /api/cart…`, `POST :id/items`, `PATCH :id/items/:itemId`, `DELETE …` |
-| Pedidos | `GET /api/orders`, `/:id`, `POST` (público), `PATCH :id/status` (solo ADMIN) |
+| Pedidos | `GET /api/orders`, `/:id` (JWT; cliente solo los propios, ADMIN todos), `POST` (público), `PATCH :id/status` (solo ADMIN) |
 | Checkout | `POST /api/checkout` |
 | Pagos | `GET /payments/public-config`, `POST /intent`, `GET /:id/status`, `GET /by-order/:orderId`, `POST /webhook` |
 | Admin | `GET /api/admin/stats` (solo ADMIN) |
@@ -384,7 +392,7 @@ con revocación en logout), roles `ADMIN|CUSTOMER` (`RolesGuard`, JWT falla sin
   (`id`, `product_id` FK cascade, `movement_type` enum
   `PURCHASE|SALE|RETURN|ADJUSTMENT|CANCELLATION`, `quantity` con signo,
   `previous_stock`, `new_stock`, `reason`, `reference`, `created_by`, `created_at`),
-  índices por producto, tipo y fecha. Migración `0002_*` aplicada.
+  índices por producto, tipo y fecha. Incluida en la migración base `0000_*`.
 - `InventoryService` (`app/src/inventory/`): `increaseStock()`, `decreaseStock()`,
   `adjustStock()` + `history()`. Toda modificación corre en transacción Drizzle
   (select → validación → update → insert); nunca permite `stock < 0` (400 si
@@ -399,7 +407,7 @@ con revocación en logout), roles `ADMIN|CUSTOMER` (`RolesGuard`, JWT falla sin
 - Esquema `app/src/database/schema/cart.ts`: `carts` (`id`, `user_id` único
   nullable para invitado/usuario, timestamps) y `cart_items` (`id`, `cart_id` FK
   cascade, `product_id` FK cascade, `quantity`, `unit_price` snapshot backend,
-  único por `(cart_id, product_id)`). Migración `0003_*` aplicada.
+  único por `(cart_id, product_id)`). Incluida en la migración base `0000_*`.
 - `CartService` (`app/src/cart/`): crear, consultar (ítems + `subtotal`,
   `meta { count, totalQuantity, total }`), agregar, modificar cantidad, eliminar
   ítem, vaciar. Transacción al agregar; precio siempre desde `products.price`
@@ -417,7 +425,8 @@ con revocación en logout), roles `ADMIN|CUSTOMER` (`RolesGuard`, JWT falla sin
   `order_number` único, `user_id`, `status`, `subtotal`, `shipping_cost`,
   `discount`, `total`, `payment_status`, `shipping_address`, timestamps) y
   `order_items` (`order_id` cascade, `product_id` set-null, snapshot
-  `productName`, `sku`, `unitPrice`, `quantity`, `subtotal`). Migración `0004_*`.
+  `productName`, `sku`, `unitPrice`, `quantity`, `subtotal`). Incluida en la
+  migración base `0000_*`.
 - `OrdersService` (`app/src/orders/`): `create()` acepta `{ cartId }` o
   `items [{ productId, quantity }]`; todo calculado en backend (precio desde
   `products`, cupón `IMPORTIFY10` = 10%, envío $12.000 gratis desde $200.000
@@ -457,7 +466,7 @@ parámetros, firmas ni estados inventados.
   `GET /transactions/{id}`; estados finales `APPROVED|DECLINED|VOIDED|ERROR`.
 - Tabla `payments` (`order_id`, `reference` única, `amount_cents`, `currency`,
   `status`, `wompi_transaction_id`, `customer_email`, `payment_method_type`,
-  `raw_response`). Migración `0005_*`.
+  `raw_response`). Incluida en la migración base `0000_*`.
 - El monto sale de `orders.total` (nunca de appweb). El frontend no decide el
   resultado: `GET /api/payments/:id/status` re-verifica contra Wompi; webhook
   `POST /api/payments/webhook` (evento `transaction.updated`) valida checksum
@@ -474,6 +483,143 @@ parámetros, firmas ni estados inventados.
   `WOMPI_PRIVATE_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`.
   Integración exclusivamente desde `app`; `appweb` solo usa la llave pública vía `app`.
 
+## Despliegue en Hostinger
+
+Hostinger Web/Cloud usa **MariaDB** (compatible MySQL) y soporta Node.js 20/22.
+Se despliegan dos Web Apps independientes (`app` y `appweb`) y una base MySQL
+administrada. En un VPS también se puede usar Docker Compose.
+
+### 1. Base de datos
+
+1. En hPanel: `Websites → Dashboard → Databases → MySQL Databases → Create`.
+2. Guardar el nombre completo de la base y el usuario (incluyen prefijo, p. ej.
+   `u123456789_importify`) y la contraseña.
+3. Usar host `127.0.0.1` y puerto `3306` (no `localhost`; Node resuelve
+   `localhost` como IPv6 `::1` y Hostinger solo autoriza `127.0.0.1`).
+4. Cadena resultante:
+
+   ```env
+   DATABASE_URL=mysql://USUARIO:PASSWORD@127.0.0.1:3306/BASE
+   ```
+
+### 2. App NestJS (`app`)
+
+Crear un Web App desde GitHub/GitLab o subiendo un ZIP del proyecto:
+
+| Ajuste | Valor |
+| ------ | ----- |
+| Root directory | `app` |
+| Application type | NestJS |
+| Node.js | 20 o 22 |
+| Build script | `build` |
+| Output directory | `dist` |
+| Entry file | `main.js` |
+
+Variables de entorno mínimas:
+
+```env
+DATABASE_URL=mysql://USUARIO:PASSWORD@127.0.0.1:3306/BASE
+NODE_ENV=production
+RUN_MIGRATIONS_ON_START=true
+JWT_SECRET=<secreto-largo-y-aleatorio>
+CORS_ORIGINS=https://tu-dominio.com,https://www.tu-dominio.com
+WOMPI_ENV=production
+WOMPI_PUBLIC_KEY=...
+WOMPI_PRIVATE_KEY=...
+WOMPI_INTEGRITY_SECRET=...
+WOMPI_EVENTS_SECRET=...
+SMTP_HOST=...
+SMTP_PORT=...
+SMTP_USER=...
+SMTP_PASS=...
+SMTP_FROM=...
+```
+
+No hace falta fijar `PORT`: la app usa `process.env.PORT` y Hostinger lo inyecta.
+El `postbuild` copia `drizzle/` a `dist/drizzle/`, y al arrancar se aplican las
+migraciones automáticamente (`RUN_MIGRATIONS_ON_START=true` o `NODE_ENV=production`).
+La migración base crea las 11 tablas. Si se prefiere migrar por SSH, poner
+`RUN_MIGRATIONS_ON_START=false` y ejecutar `node migrate.cjs` una vez.
+
+### 3. Appweb Next.js (`appweb`)
+
+| Ajuste | Valor |
+| ------ | ----- |
+| Root directory | `appweb` |
+| Application type | Next.js |
+| Node.js | 20 o 22 |
+| Build script | `build` |
+| Output directory | `.next` |
+| Entry file | (vacío) |
+
+`NEXT_PUBLIC_API_URL` se incrusta en el build; debe apuntar a la API pública y
+requiere redeploy al cambiarla:
+
+```env
+NEXT_PUBLIC_API_URL=https://api.tu-dominio.com/api
+```
+
+Hostinger aplica `output: "standalone"` automáticamente. Las imágenes de
+`appweb/public/images/` se publican con la app; no están en la base.
+
+### 4. Migrar los datos locales
+
+Exportar desde el MariaDB local (genera `database/importify-data.sql`, ignorado
+por git):
+
+```powershell
+.\database\export-local-data.ps1
+```
+
+Importar en Hostinger con phpMyAdmin (subir el `.sql`) o por MySQL remoto:
+
+1. hPanel → `Databases → Remote MySQL`: autorizar la IP local y copiar el host
+   `srvXXXX.hstgr.io` (puerto 3306).
+2. Desde `app`:
+
+   ```powershell
+   $env:DATABASE_URL="mysql://USUARIO:PASSWORD@srvXXXX.hstgr.io:3306/BASE"
+   node scripts/import-data.cjs
+   node scripts/verify-deploy.cjs
+   ```
+
+El schema debe existir antes de importar: arrancar `app` una vez para que corran
+las migraciones, o ejecutar `node migrate.cjs` por SSH. El dump no incluye
+`__drizzle_migrations` y no crea tablas; importar sobre una base vacía.
+
+Datos esperados: 3 roles, 3 usuarios, 4 categorías, 50 productos y 50 imágenes.
+Las 50 rutas de `product_images.processed_image` deben existir en
+`appweb/public/images/` con el mismo nombre, mayúsculas y acentos. El script
+`app/scripts/sync-catalog-metadata.cjs` normaliza rutas, inserta imágenes
+faltantes, acentúa categorías y marca destacados/más vendidos; usar
+`--dry-run` y `--verify` antes/después.
+
+### 5. Verificación y rollback
+
+```powershell
+# Desde app, con la URL pública
+node scripts/smoke-test.cjs https://api.tu-dominio.com
+
+# Login admin opcional
+$env:SMOKE_ADMIN_EMAIL="admin@importify.com"
+$env:SMOKE_ADMIN_PASSWORD="..."
+node scripts/smoke-test.cjs https://api.tu-dominio.com
+```
+
+Verificar `/api/health`, catálogo, categorías, login admin y una imagen real.
+Configurar en Wompi la URL de eventos `https://api.tu-dominio.com/api/payments/webhook`
+con el mismo `WOMPI_EVENTS_SECRET`, y SMTP para los códigos OTP del panel.
+Antes de cada despliegue: exportar la base desde hPanel y conservar el commit
+anterior. Rollback: redeploy del commit previo y, si hubo cambios de schema,
+restaurar el backup SQL.
+
+### Límites del hosting compartido
+
+- `app/uploads/` no es persistente; para nuevas subidas usar object storage.
+- `rembg`/Python puede no estar disponible; las imágenes actuales ya están
+  procesadas en `appweb/public/images/`.
+- Los procesos Node se detienen sin tráfico y arrancan en la siguiente petición.
+
 ## Imágenes
 
 Ubicación: `appweb/public/images/` (servidas como `/images/...`, solo `next/image`,
@@ -486,9 +632,8 @@ cero dependencias externas en componentes).
 - `testimonials/`: avatares o fotos de testimonios.
 
 Formatos preferidos: `.webp` / `.png` / `.jpg`. Nombres en minúsculas con guiones.
-
-Referencias de origen y rutas finales: `IMAGE_SOURCES.md` (raíz del proyecto).
-Estado actual: placeholders `.svg` locales; nada descargado automáticamente.
+La base guarda solo la ruta (`/images/products/...`); los archivos se despliegan
+con `appweb`. Referencias de origen: `IMAGE_SOURCES.md` (raíz del proyecto).
 
 ## Desarrollo
 
@@ -501,7 +646,7 @@ Estado actual: placeholders `.svg` locales; nada descargado automáticamente.
 
 - [x] Base + Docker + estructura de carpetas + README principal.
 - [x] `app` NestJS verificado (`GET /api/health`, ConfigModule, ValidationPipe, CORS). Módulos de dominio creados como carpetas vacías, sin implementar.
-- [x] Drizzle ORM + conexión DB en `app` (Etapa 8: 5 tablas, migración aplicada y verificada).
+- [x] Drizzle ORM + conexión DB en `app` (MySQL/MariaDB, 11 tablas, migración base aplicada y verificada).
 - [x] Scaffolding `appweb` Next.js 14 + React 18 + TS.
 - [x] Diseño `appweb` Etapa 6 (header, home completa, 8 rutas, mocks sin duplicados).
 - [x] Sistema de imágenes Etapa 7 (`IMAGE_SOURCES.md`, placeholders locales, `next/image`).
@@ -524,9 +669,9 @@ Set-Location app
 npm test  # jest e2e: 4 suites, 20 pruebas
 ```
 
-- Harness `app/test/test-app.ts`: PostgreSQL en memoria (`pg-mem`) con las
+- Harness `app/test/test-app.ts`: MySQL/MariaDB real (`TEST_DATABASE_URL`) con las
   **migraciones SQL reales** del proyecto, app Nest real por HTTP (supertest),
-  `PAYMENT_PROVIDER` programable (no llama a Wompi).
+  `PAYMENT_PROVIDER` programable (no llama a Wompi). Cada suite vacía las tablas.
 - `auth.e2e-spec.ts`: registro, duplicado 409, login 401/201, `me` sin secretos,
   refresh + revocación en logout.
 - `catalog.e2e-spec.ts`: permisos (401 invitado, 403 CUSTOMER, ADMIN ok), CRUD,
@@ -556,14 +701,15 @@ npm test  # jest e2e: 4 suites, 20 pruebas
 - Pagos Wompi (intent, firma de integridad, verificación, webhook validado).
 - Panel administrativo (`/admin/*`, solo ADMIN).
 - Conexión `appweb ↔ app` con estados loading/success/error/empty.
+- Vitrina, home, detalle, carrito y admin de productos desde API/DB.
+- 50 productos con 50 imágenes normalizadas; 6 destacados y 8 más vendidos.
+- `GET /orders` y `GET /orders/:id` protegidos por JWT y ownership.
 - Docker completo (`db` + `app` + `appweb`).
 - Auditoría de seguridad aplicada.
 - 20 pruebas e2e reales en verde.
 
 ## Funcionalidades pendientes
 
-- Detalle `/productos/[slug]` y home con datos reales (hoy mocks visuales).
-- Imágenes reales de producto (hoy placeholders `.svg`; ver `IMAGE_SOURCES.md`).
 - Gestión de direcciones de usuario en cuenta.
 - Widget Wompi embebido en `appweb` (hoy el intent se crea; falta UI de tarjeta/PSE).
 - Emails transaccionales (confirmación, recibo).

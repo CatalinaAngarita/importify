@@ -1,51 +1,58 @@
 import {
+  decimal,
   index,
-  integer,
-  jsonb,
-  numeric,
-  pgEnum,
-  pgTable,
+  int,
+  mysqlEnum,
+  mysqlTable,
   text,
-  timestamp,
   uniqueIndex,
-  uuid,
   varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
+import { jsonCol, timestampCol, uuidCol, uuidPk } from "./columns";
 import { products } from "./catalog";
 import { users } from "./users";
 
-export const orderStatusEnum = pgEnum("order_status", [
+const orderStatuses = [
   "PENDING",
   "CONFIRMED",
   "PROCESSING",
   "SHIPPED",
   "DELIVERED",
   "CANCELLED",
-]);
+] as const;
 
-export const paymentStatusEnum = pgEnum("payment_status", [
+const paymentStatuses = [
   "PENDING",
   "APPROVED",
   "DECLINED",
   "CANCELLED",
   "REFUNDED",
-]);
+] as const;
 
-export const orders = pgTable(
+export type OrderStatus = (typeof orderStatuses)[number];
+export type PaymentStatus = (typeof paymentStatuses)[number];
+
+export const orders = mysqlTable(
   "orders",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orderNumber: varchar("order_number", { length: 30 }).notNull().unique(),
-    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
-    status: orderStatusEnum("status").notNull().default("PENDING"),
-    subtotal: numeric("subtotal", { precision: 12, scale: 2 }).notNull(),
-    shippingCost: numeric("shipping_cost", { precision: 12, scale: 2 }).notNull().default("0"),
-    discount: numeric("discount", { precision: 12, scale: 2 }).notNull().default("0"),
-    total: numeric("total", { precision: 12, scale: 2 }).notNull(),
-    paymentStatus: paymentStatusEnum("payment_status").notNull().default("PENDING"),
-    shippingAddress: jsonb("shipping_address"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    id: uuidPk(),
+    orderNumber: varchar("order_number", { length: 30 }).notNull(),
+    userId: uuidCol("user_id").references(() => users.id, { onDelete: "set null" }),
+    status: mysqlEnum("status", [...orderStatuses]).notNull().default("PENDING"),
+    subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
+    shippingCost: decimal("shipping_cost", { precision: 12, scale: 2 })
+      .notNull()
+      .default("0"),
+    discount: decimal("discount", { precision: 12, scale: 2 })
+      .notNull()
+      .default("0"),
+    total: decimal("total", { precision: 12, scale: 2 }).notNull(),
+    paymentStatus: mysqlEnum("payment_status", [...paymentStatuses])
+      .notNull()
+      .default("PENDING"),
+    shippingAddress: jsonCol("shipping_address"),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     uniqueIndex("orders_number_uidx").on(t.orderNumber),
@@ -55,22 +62,21 @@ export const orders = pgTable(
   ],
 );
 
-export const orderItems = pgTable(
+export const orderItems = mysqlTable(
   "order_items",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orderId: uuid("order_id")
+    id: uuidPk(),
+    orderId: uuidCol("order_id")
       .notNull()
       .references(() => orders.id, { onDelete: "cascade" }),
-    productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
+    productId: uuidCol("product_id").references(() => products.id, {
+      onDelete: "set null",
+    }),
     productName: text("product_name").notNull(),
     sku: varchar("sku", { length: 60 }).notNull(),
-    unitPrice: numeric("unit_price", { precision: 12, scale: 2 }).notNull(),
-    quantity: integer("quantity").notNull(),
-    subtotal: numeric("subtotal", { precision: 12, scale: 2 }).notNull(),
+    unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
+    quantity: int("quantity").notNull(),
+    subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
   },
   (t) => [index("order_items_order_idx").on(t.orderId)],
 );
-
-export type OrderStatus = (typeof orderStatusEnum.enumValues)[number];
-export type PaymentStatus = (typeof paymentStatusEnum.enumValues)[number];

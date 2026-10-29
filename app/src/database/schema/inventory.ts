@@ -1,38 +1,39 @@
 import {
   index,
-  integer,
-  pgEnum,
-  pgTable,
+  int,
+  mysqlEnum,
+  mysqlTable,
   text,
-  timestamp,
-  uuid,
   varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
+import { timestampCol, uuidCol, uuidPk } from "./columns";
 import { products } from "./catalog";
 
-export const inventoryMovementTypeEnum = pgEnum("inventory_movement_type", [
+const inventoryMovementTypes = [
   "PURCHASE",
   "SALE",
   "RETURN",
   "ADJUSTMENT",
   "CANCELLATION",
-]);
+] as const;
 
-export const inventoryMovements = pgTable(
+export type InventoryMovementType = (typeof inventoryMovementTypes)[number];
+
+export const inventoryMovements = mysqlTable(
   "inventory_movements",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    productId: uuid("product_id")
+    id: uuidPk(),
+    productId: uuidCol("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    movementType: inventoryMovementTypeEnum("movement_type").notNull(),
-    quantity: integer("quantity").notNull(),
-    previousStock: integer("previous_stock").notNull(),
-    newStock: integer("new_stock").notNull(),
+    movementType: mysqlEnum("movement_type", [...inventoryMovementTypes]).notNull(),
+    quantity: int("quantity").notNull(),
+    previousStock: int("previous_stock").notNull(),
+    newStock: int("new_stock").notNull(),
     reason: text("reason"),
     reference: varchar("reference", { length: 120 }),
-    createdBy: uuid("created_by"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdBy: uuidCol("created_by"),
+    createdAt: timestampCol("created_at"),
   },
   (t) => [
     index("inventory_movements_product_idx").on(t.productId),
@@ -40,6 +41,3 @@ export const inventoryMovements = pgTable(
     index("inventory_movements_created_idx").on(t.createdAt),
   ],
 );
-
-export type InventoryMovementType =
-  (typeof inventoryMovementTypeEnum.enumValues)[number];

@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const WHY_FEATURES = [
   {
     title: "COMPRA SEGURA",
@@ -67,48 +69,25 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div
-          className="about-visual"
-          role="img"
-          aria-label="Espacio para la imagen de una asesora de Importify con paquetes"
-        >
-          <div className="about-visual-mark" aria-hidden="true">i</div>
-          <span className="about-star about-star-1" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3-6.3-4.5-6.3 4.5L8 13.7l-6-4.5h7.6L12 2z" /></svg>
-          </span>
-          <span className="about-star about-star-2" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3-6.3-4.5-6.3 4.5L8 13.7l-6-4.5h7.6L12 2z" /></svg>
-          </span>
-          <span className="about-star about-star-3" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3-6.3-4.5-6.3 4.5L8 13.7l-6-4.5h7.6L12 2z" /></svg>
-          </span>
-          <span className="about-mark-line about-mark-line-1" aria-hidden="true">
-            <svg viewBox="0 0 48 24"><path d="M2 4c14 2 30 8 42 18" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" /><path d="M44 22l-8 1 5-7" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </span>
-          <span className="about-mark-line about-mark-line-2" aria-hidden="true">
-            <svg viewBox="0 0 48 16"><path d="M2 8h40" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" /><path d="M40 2l7 6-7 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </span>
-          <div className="about-image-slot" aria-hidden="true" />
-        </div>
-      </section>
-
-      <section className="about-stats" aria-label="Importify en cifras">
-        <div className="about-stat">
-          <strong>+5</strong>
-          <span>Años de Experiencia</span>
-        </div>
-        <div className="about-stat">
-          <strong>+60</strong>
-          <span>Casos de Éxito</span>
-        </div>
-        <div className="about-stat">
-          <strong>+90</strong>
-          <span>Clientes Satisfechos</span>
-          <span
-            className="about-stat-avatar"
-            role="img"
-            aria-label="Espacio para la foto de una clienta satisfecha"
-          />
+        <div className="about-visual">
+          <div className="about-visual-top">
+            <Image
+              src="/images/about/quienes-somos-top.svg"
+              alt="Imagen Quiénes somos"
+              fill
+              style={{ objectFit: "contain", objectPosition: "center", transform: "scale(1.25)", transformOrigin: "center" }}
+              priority
+            />
+          </div>
+          <div className="about-visual-logo">
+            <Image
+              src="/images/about/logo-quienes-somos.svg"
+              alt="Logo Quiénes somos Importify"
+              fill
+              style={{ objectFit: "contain", objectPosition: "center", transform: "scale(1.25)", transformOrigin: "center" }}
+              priority
+            />
+          </div>
         </div>
       </section>
 
@@ -146,11 +125,15 @@ export default function AboutPage() {
               complicaciones y con la mejor experiencia.
             </p>
           </div>
-          <div
-            className="about-ally-art"
-            role="img"
-            aria-label="Espacio para la ilustración de importaciones de Importify"
-          />
+          <div className="about-ally-art" role="img" aria-label="Ilustración de importaciones de Importify">
+            <Image
+              src="/images/about/somos-tu-aliado.svg"
+              alt="Ilustración aliados Importify"
+              fill
+              style={{ objectFit: "contain", objectPosition: "center" }}
+              priority
+            />
+          </div>
         </div>
       </section>
     </main>

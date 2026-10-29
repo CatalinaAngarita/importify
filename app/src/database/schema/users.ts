@@ -1,39 +1,38 @@
 import {
   boolean,
   index,
-  pgTable,
+  mysqlTable,
   text,
-  timestamp,
   uniqueIndex,
-  uuid,
   varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
+import { timestampCol, uuidCol, uuidPk } from "./columns";
 
 // Roles: admin | cliente (semilla en etapa de auth)
-export const roles = pgTable(
+export const roles = mysqlTable(
   "roles",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: varchar("name", { length: 30 }).notNull().unique(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    id: uuidPk(),
+    name: varchar("name", { length: 30 }).notNull(),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [uniqueIndex("roles_name_uidx").on(t.name)],
 );
 
-export const users = pgTable(
+export const users = mysqlTable(
   "users",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    email: varchar("email", { length: 255 }).notNull().unique(),
+    id: uuidPk(),
+    email: varchar("email", { length: 255 }).notNull(),
     passwordHash: text("password_hash").notNull(),
     firstName: varchar("first_name", { length: 100 }),
     lastName: varchar("last_name", { length: 100 }),
-    roleId: uuid("role_id").references(() => roles.id),
+    roleId: uuidCol("role_id").references(() => roles.id),
     isActive: boolean("is_active").notNull().default(true),
     refreshTokenHash: text("refresh_token_hash"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     uniqueIndex("users_email_uidx").on(t.email),

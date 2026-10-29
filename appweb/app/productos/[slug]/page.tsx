@@ -3,27 +3,70 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "@/components/Container";
 import { SectionTitle } from "@/components/SectionTitle";
 import { ProductCard } from "@/components/ProductCard";
-import { PRODUCTS } from "@/services/catalog.mock";
+import { ApiError } from "@/services/api";
+import { fetchProductBySlug, fetchProducts } from "@/services/catalog.service";
 import { formatCOP } from "@/services/format";
 import { useCart } from "@/context/CartContext";
+import type { Product } from "@/types/catalog";
 
 export default function ProductoDetalle({ params }: { params: { slug: string } }) {
-  const product = PRODUCTS.find((p) => p.slug === params.slug);
-  if (!product) notFound();
-  const related = PRODUCTS.filter(
-    (p) => p.category === product.category && p.slug !== product.slug,
-  ).slice(0, 4);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [related, setRelated] = useState<Product[]>([]);
+  const [missing, setMissing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    setProduct(null);
+    setRelated([]);
+    setMissing(false);
+    setError(null);
+
+    fetchProductBySlug(params.slug)
+      .then(async (loaded) => {
+        if (!active) return;
+        setProduct(loaded);
+        const siblings = await fetchProducts({ categorySlug: loaded.category, limit: 5 });
+        if (active) {
+          setRelated(siblings.filter((item) => item.slug !== loaded.slug).slice(0, 4));
+        }
+      })
+      .catch((err) => {
+        if (!active) return;
+        if (err instanceof ApiError && err.status === 404) setMissing(true);
+        else setError(err instanceof Error ? err.message : "No fue posible cargar el producto.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [params.slug]);
+
+  if (missing) notFound();
+  if (!product) {
+    return (
+      <main>
+        <Container>
+          <section className="section">
+            <p className="muted">{error ?? "Cargando producto…"}</p>
+          </section>
+        </Container>
+      </main>
+    );
+  }
+
+  const soldOut = product.stock !== undefined && product.stock <= 0;
+
   function addToCart() {
-    if (!product) return;
+    if (!product || soldOut) return;
     addItem(product, quantity);
     setQuantity(1);
     setAdded(true);
@@ -37,7 +80,7 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
           <div className="detail">
             <div className="product-media" style={{ padding: 0, overflow: "hidden", position: "relative" }}>
 <Image
-          src={`${product.primaryImage || product.image}?v=2`}
+          src={product.image}
           alt={product.name}
           fill
           sizes="(max-width: 720px) 100vw, 500px"
@@ -46,10 +89,11 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
         />
           </div>
             <div>
-              <span className="tag">{product.category}</span>
+              <span className="tag">{product.categoryName ?? product.category}</span>
               <h1>{product.name}</h1>
               <p className="muted">
                 ⭐ {product.rating} · {product.sold} vendidos
+                {product.stock !== undefined && ` · ${product.stock} disponibles`}
               </p>
               <p className="price" style={{ fontSize: "1.6rem" }}>
                 {formatCOP(product.price)}
@@ -76,8 +120,8 @@ export default function ProductoDetalle({ params }: { params: { slug: string } }
                 </div>
               </div>
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                <button className="btn" onClick={addToCart}>
-                  {added ? "✓ Agregado al carrito" : "Agregar al carrito"}
+                <button className="btn" onClick={addToCart} disabled={soldOut}>
+                  {soldOut ? "Agotado" : added ? "Agregado al carrito" : "Agregar al carrito"}
                 </button>
                 <Link href="/checkout" className="btn btn-ghost">
                   Comprar ahora

@@ -4,11 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { CATEGORIES, PRODUCTS } from "@/services/catalog.mock";
-import { CATALOG } from "@/services/catalog.products";
+import { fetchCatalog } from "@/services/catalog.service";
 import { useCart } from "@/context/CartContext";
 import { formatCOP } from "@/services/format";
-import type { Product } from "@/types/catalog";
+import type { Category, Product } from "@/types/catalog";
 
 // La maqueta muestra cuatro filas de tres artículos por página.
 const PAGE_SIZE = 12;
@@ -23,7 +22,7 @@ const SORTS = [
 
 type SortValue = (typeof SORTS)[number]["value"];
 
-const POOL: Product[] = [...PRODUCTS, ...Object.values(CATALOG).flat()];
+
 
 // Algunos grupos de la interfaz reúnen los slugs históricos del catálogo.
 const PILL_CATEGORY_GROUPS: Record<string, string[]> = {
@@ -43,9 +42,9 @@ const EXTRA_CATEGORY_LABELS: Record<string, string> = {
   automotive: "Autopartes",
 };
 
-function categoryLabel(slug: string): string {
+function categoryLabel(slug: string, categories: Category[]): string {
   return (
-    CATEGORIES.find((c) => c.slug === slug)?.name ??
+    categories.find((c) => c.slug === slug)?.name ??
     EXTRA_CATEGORY_LABELS[slug] ??
     slug.replace(/-/g, " ")
   );
@@ -70,6 +69,30 @@ function Catalogo() {
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [qtyPopover, setQtyPopover] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchCatalog()
+      .then((catalog) => {
+        if (!active) return;
+        setProducts(catalog.products);
+        setCategories(catalog.categories);
+        setError(null);
+      })
+      .catch((err) => {
+        if (active) setError(err instanceof Error ? err.message : "No fue posible cargar el catálogo.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // El control flotante de cantidad se cierra al hacer clic fuera de él.
   useEffect(() => {
@@ -83,10 +106,7 @@ function Catalogo() {
   }, [qtyPopover]);
 
   // Lista completa de categorías para filtros sidebar.
-  const allCats = useMemo(
-    () => CATEGORIES.map((c) => c.slug),
-    []
-  );
+  const allCats = useMemo(() => categories.map((c) => c.slug), [categories]);
 
   // Categorías principales de la navegación horizontal de la maqueta.
   // Los slugs mantienen la compatibilidad con el catálogo ya existente.
@@ -102,13 +122,13 @@ function Catalogo() {
   }
 
   const filtered = useMemo(() => {
-    let list = POOL.filter((p) => {
-      if (query && !`${p.name} ${categoryLabel(p.category)}`.toLowerCase().includes(query)) return false;
+    let list = products.filter((p) => {
+      if (query && !`${p.name} ${categoryLabel(p.category, categories)}`.toLowerCase().includes(query)) return false;
       if (pill !== "todos" && !(PILL_CATEGORY_GROUPS[pill] ?? [pill]).includes(p.category)) return false;
       if (cats.length > 0 && !cats.includes(p.category)) return false;
       if (p.price > maxPrice) return false;
-      if (availability.includes("bodega") && !(p.sold > 0 || p.price > 0)) return false;
-      if (availability.includes("agotado") && p.price > 0) return false;
+      if (availability.includes("bodega") && !(p.stock === undefined || p.stock > 0)) return false;
+      if (availability.includes("agotado") && (p.stock === undefined || p.stock > 0)) return false;
       const d = discountOf(p);
       if (discount.includes("con") && d === null) return false;
       if (discount.includes("sin") && d !== null) return false;
@@ -118,7 +138,7 @@ function Catalogo() {
     if (sort === "precio-desc") list = [...list].sort((a, b) => b.price - a.price);
     if (sort === "vendidos") list = [...list].sort((a, b) => b.sold - a.sold);
     return list;
-  }, [query, pill, cats, maxPrice, availability, discount, sort]);
+  }, [query, pill, cats, maxPrice, availability, discount, sort, products, categories]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const current = Math.min(page, totalPages);
@@ -188,7 +208,7 @@ function Catalogo() {
               }}
               aria-pressed={pill === slug}
             >
-              {slug === "todos" ? "Todos" : categoryLabel(slug)}
+              {slug === "todos" ? "Todos" : categoryLabel(slug, categories)}
             </button>
           ))}
         </nav>
@@ -248,7 +268,7 @@ function Catalogo() {
                     checked={cats.includes(slug)}
                     onChange={() => toggle(cats, slug, setCats)}
                   />
-                  {categoryLabel(slug)}
+                  {categoryLabel(slug, categories)}
                 </label>
               ))}
             </div>
@@ -318,6 +338,10 @@ function Catalogo() {
 
           {/* 7. Grid de productos */}
           <section className="shop-grid" aria-label="Listado de productos">
+            {loading && <p className="shop-empty">Cargando productos…</p>}
+            {error && !loading && (
+              <p className="shop-empty">No se pudo cargar el catálogo. {error}</p>
+            )}
             {visible.map((p) => {
               const d = discountOf(p);
               const qty = qtyOf(p.slug);
@@ -328,7 +352,7 @@ function Catalogo() {
                   </h3>
                   <Link href={`/productos/${p.slug}`} className="shop-card-media" aria-label={p.name}>
                     <Image
-                      src={`${p.primaryImage || p.image}?v=2`}
+                      src={p.image}
                       alt={p.name}
                       fill
                       sizes="(max-width: 720px) 45vw, (max-width: 1100px) 30vw, 300px"
@@ -392,7 +416,7 @@ function Catalogo() {
                 </article>
               );
             })}
-            {visible.length === 0 && (
+            {!loading && !error && visible.length === 0 && (
               <p className="shop-empty">No se encontraron productos con los filtros seleccionados.</p>
             )}
           </section>

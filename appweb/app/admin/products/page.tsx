@@ -5,14 +5,30 @@ import { ApiState } from "@/components/ApiState";
 import { SectionTitle } from "@/components/SectionTitle";
 import { useApi } from "@/hooks/useApi";
 import { adminProducts, listProducts } from "@/services/products.service";
+import { listCategories } from "@/services/categories.service";
 import { formatCOP } from "@/services/format";
+import type { ApiProduct } from "@/types/api";
 
 export default function AdminProductsPage() {
-  const { data, status, error, reload } = useApi(() => listProducts({ limit: 50 }));
+  const { data, status, error, reload } = useApi(() => listProducts({ limit: 100 }));
+  const { data: categories } = useApi(() => listCategories({ limit: 100 }));
   const createFormRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [form, setForm] = useState({ sku: "", name: "", slug: "", price: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    sku: "",
+    name: "",
+    slug: "",
+    price: "",
+    compareAtPrice: "",
+    stock: "0",
+    categoryId: "",
+    shortDescription: "",
+    isActive: true,
+    isFeatured: false,
+    isBestSeller: false,
+  });
   const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
   const [images, setImages] = useState<Array<{ 
     id: string; 
@@ -34,15 +50,17 @@ export default function AdminProductsPage() {
     }
   }, []);
 
-  async function run(fn: () => Promise<unknown>, msg?: string) {
+  async function run(fn: () => Promise<unknown>, msg?: string): Promise<boolean> {
     setBusy(true);
     setNotice(null);
     try {
       await fn();
       await reload();
       if (msg) setNotice(msg);
+      return true;
     } catch (e) {
       setNotice(e instanceof Error ? e.message : "Error inesperado");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -127,6 +145,41 @@ export default function AdminProductsPage() {
     setImages([]);
   }
 
+  function resetForm() {
+    setEditingId(null);
+    setForm({
+      sku: "",
+      name: "",
+      slug: "",
+      price: "",
+      compareAtPrice: "",
+      stock: "0",
+      categoryId: "",
+      shortDescription: "",
+      isActive: true,
+      isFeatured: false,
+      isBestSeller: false,
+    });
+  }
+
+  function startEdit(product: ApiProduct) {
+    setEditingId(product.id);
+    setForm({
+      sku: product.sku,
+      name: product.name,
+      slug: product.slug,
+      price: String(Number(product.price)),
+      compareAtPrice: product.compareAtPrice ? String(Number(product.compareAtPrice)) : "",
+      stock: String(product.stock),
+      categoryId: product.categoryId ?? "",
+      shortDescription: product.shortDescription ?? "",
+      isActive: product.isActive,
+      isFeatured: product.isFeatured,
+      isBestSeller: product.isBestSeller,
+    });
+    createFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <section>
       <SectionTitle title="Productos" sub="Crear, activar/desactivar, gestionar imágenes" />
@@ -140,19 +193,31 @@ export default function AdminProductsPage() {
         style={{ maxWidth: "none" }}
         onSubmit={(e) => {
           e.preventDefault();
+          const payload = {
+            sku: form.sku,
+            name: form.name,
+            slug: form.slug,
+            price: Number(form.price),
+            compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
+            stock: Number(form.stock),
+            categoryId: form.categoryId || undefined,
+            shortDescription: form.shortDescription || undefined,
+            isActive: form.isActive,
+            isFeatured: form.isFeatured,
+            isBestSeller: form.isBestSeller,
+          };
           run(
             () =>
-              adminProducts.create({
-                sku: form.sku,
-                name: form.name,
-                slug: form.slug,
-                price: Number(form.price),
-              }),
-            "Producto creado.",
-          );
+              editingId
+                ? adminProducts.update(editingId, payload)
+                : adminProducts.create(payload),
+            editingId ? "Producto actualizado." : "Producto creado.",
+          ).then((ok) => {
+            if (ok) resetForm();
+          });
         }}
       >
-        <h3>Crear producto</h3>
+        <h3>{editingId ? "Editar producto" : "Crear producto"}</h3>
         <div className="form-row">
           <label>
             SKU<input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} required />
@@ -166,10 +231,43 @@ export default function AdminProductsPage() {
             Slug<input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required />
           </label>
           <label>
-            Precio<input type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+            Categoría
+            <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
+              <option value="">Sin categoría</option>
+              {categories?.data.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
           </label>
         </div>
-        <button className="btn" disabled={busy}>Crear</button>
+        <div className="form-row">
+          <label>
+            Precio<input type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+          </label>
+          <label>
+            Precio anterior<input type="number" min="0" value={form.compareAtPrice} onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value })} />
+          </label>
+          <label>
+            Stock<input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} required />
+          </label>
+        </div>
+        <label>
+          Descripción corta
+          <input value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />
+        </label>
+        <div className="form-row">
+          <label><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} /> Activo</label>
+          <label><input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} /> Destacado</label>
+          <label><input type="checkbox" checked={form.isBestSeller} onChange={(e) => setForm({ ...form, isBestSeller: e.target.checked })} /> Más vendido</label>
+        </div>
+        <div style={{ display: "flex", gap: "0.75rem" }}>
+          <button className="btn" disabled={busy}>{editingId ? "Guardar cambios" : "Crear"}</button>
+          {editingId && (
+            <button type="button" className="btn btn-ghost" onClick={resetForm} disabled={busy}>
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       {(status === "success" || status === "empty") && data && data.data.length > 0 && (
@@ -179,8 +277,10 @@ export default function AdminProductsPage() {
               <tr>
                 <th>Nombre</th>
                 <th>SKU</th>
+                <th>Categoría</th>
                 <th>Precio</th>
                 <th>Stock</th>
+                <th>Flags</th>
                 <th>Activo</th>
                 <th>Imágenes</th>
                 <th></th>
@@ -191,9 +291,20 @@ export default function AdminProductsPage() {
                 <tr key={p.id}>
                   <td>{p.name}</td>
                   <td>{p.sku}</td>
+                  <td>{p.categoryName ?? "—"}</td>
                   <td>{formatCOP(Number(p.price))}</td>
                   <td>{p.stock}</td>
+                  <td>{[p.isFeatured ? "Destacado" : null, p.isBestSeller ? "Más vendido" : null].filter(Boolean).join(" · ") || "—"}</td>
                   <td>{p.isActive ? "Sí" : "No"}</td>
+                  <td>
+                    <button
+                      className="btn btn-ghost"
+                      disabled={busy}
+                      onClick={() => startEdit(p)}
+                    >
+                      Editar
+                    </button>
+                  </td>
                   <td>
                     <button
                       className="btn btn-ghost"

@@ -1,22 +1,21 @@
 import {
+  decimal,
   index,
-  integer,
-  numeric,
-  pgTable,
-  timestamp,
+  int,
+  mysqlTable,
   uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
+import { timestampCol, uuidCol, uuidPk } from "./columns";
 import { products } from "./catalog";
 import { users } from "./users";
 
-export const carts = pgTable(
+export const carts = mysqlTable(
   "carts",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    id: uuidPk(),
+    userId: uuidCol("user_id").references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     index("carts_user_idx").on(t.userId),
@@ -24,21 +23,21 @@ export const carts = pgTable(
   ],
 );
 
-export const cartItems = pgTable(
+export const cartItems = mysqlTable(
   "cart_items",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    cartId: uuid("cart_id")
+    id: uuidPk(),
+    cartId: uuidCol("cart_id")
       .notNull()
       .references(() => carts.id, { onDelete: "cascade" }),
-    productId: uuid("product_id")
+    productId: uuidCol("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    quantity: integer("quantity").notNull(),
+    quantity: int("quantity").notNull(),
     // Precio vigente tomado del backend al agregar/actualizar. Nunca del cliente.
-    unitPrice: numeric("unit_price", { precision: 12, scale: 2 }).notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     index("cart_items_cart_idx").on(t.cartId),

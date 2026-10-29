@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { count, desc, eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
@@ -74,16 +75,22 @@ export class UsersService {
       if (!role) throw new NotFoundException(`Rol '${data.roleName}' no existe`);
       roleId = role.id;
     }
-    const [row] = await this.db
+    const id = randomUUID();
+    await this.db
       .insert(users)
       .values({
+        id,
         email: data.email.toLowerCase(),
         passwordHash: data.passwordHash,
         firstName: data.firstName,
         lastName: data.lastName,
         roleId,
-      })
-      .returning(PUBLIC_COLUMNS);
+      });
+    const [row] = await this.db
+      .select(PUBLIC_COLUMNS)
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     return row;
   }
 
@@ -101,6 +108,19 @@ export class UsersService {
     await this.db
       .update(users)
       .set({ refreshTokenHash: hash, updatedAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
+  async setRole(id: string, roleName: string) {
+    const [role] = await this.db
+      .select({ id: roles.id })
+      .from(roles)
+      .where(eq(roles.name, roleName))
+      .limit(1);
+    if (!role) throw new NotFoundException(`Rol '${roleName}' no existe`);
+    await this.db
+      .update(users)
+      .set({ roleId: role.id, updatedAt: new Date() })
       .where(eq(users.id, id));
   }
 }

@@ -3,7 +3,9 @@ WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY tsconfig.json drizzle.config.ts ./
+COPY drizzle ./drizzle
 COPY src ./src
+COPY scripts ./scripts
 RUN npm run build
 
 FROM node:20-alpine AS runner

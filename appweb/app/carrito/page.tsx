@@ -2,52 +2,44 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "@/components/Container";
 import { SectionTitle } from "@/components/SectionTitle";
 import { useCart } from "@/context/CartContext";
-import { PRODUCTS } from "@/services/catalog.mock";
+import { fetchBestSellers } from "@/services/catalog.service";
 import { formatCOP, formatCOPWithSuffix } from "@/services/format";
+import type { Product } from "@/types/catalog";
+
+const FREE_SHIPPING_THRESHOLD = 200000;
+const SHIPPING_FLAT = 12000;
 
 export default function CarritoPage() {
-  const { items, count, updateQty, removeItem } = useCart();
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const { items, count, loading, error, updateQty, removeItem } = useCart();
   const [notice, setNotice] = useState<string | null>(null);
+  const [recommended, setRecommended] = useState<Product[]>([]);
 
-  const cartItems = items.map((item) => {
-    const product = PRODUCTS.find((p) => p.slug === item.product.slug);
-    return {
-      ...item,
-      product: product ?? item.product,
-      subtotal: (product?.price ?? item.product.price) * item.qty,
+  useEffect(() => {
+    let active = true;
+    fetchBestSellers(4)
+      .then((products) => {
+        if (active) setRecommended(products);
+      })
+      .catch(() => {
+        if (active) setRecommended([]);
+      });
+    return () => {
+      active = false;
     };
-  });
+  }, []);
 
-  const allSelected = cartItems.length > 0 && cartItems.every((i) => selected.has(i.product.slug));
+  const cartItems = items.map((item) => ({
+    ...item,
+    subtotal: item.product.price * item.qty,
+  }));
 
-  function toggleSelect(slug: string) {
-    const next = new Set(selected);
-    if (next.has(slug)) {
-      next.delete(slug);
-    } else {
-      next.add(slug);
-    }
-    setSelected(next);
-  }
-
-  function toggleSelectAll() {
-    if (allSelected) {
-      setSelected(new Set());
-      return;
-    }
-    setSelected(new Set(cartItems.map((i) => i.product.slug)));
-  }
-
-  const selectedItems = cartItems.filter((i) => selected.has(i.product.slug));
-  const subtotal = selectedItems.reduce((sum, i) => sum + i.subtotal, 0);
-  const shipping = cartItems.length > 0 ? 15000 : 0;
-  const tax = Math.round(subtotal * 0.19);
-  const total = subtotal + shipping + tax;
+  const subtotal = cartItems.reduce((sum, i) => sum + i.subtotal, 0);
+  const shipping = cartItems.length === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT;
+  const total = subtotal + shipping;
 
   function handleUpdateQty(slug: string, qty: number) {
     if (qty <= 0) {
@@ -69,7 +61,9 @@ export default function CarritoPage() {
         <section className="section">
           <SectionTitle title="TU CARRITO" />
           {notice && <p className="muted" style={{ marginBottom: "1rem" }}>{notice}</p>}
-          {count === 0 ? (
+          {loading && <p className="muted" style={{ marginBottom: "1rem" }}>Cargando carrito…</p>}
+          {error && <p className="muted" style={{ marginBottom: "1rem" }}>{error}</p>}
+          {loading ? null : count === 0 ? (
             <div style={{ textAlign: "center", padding: "3rem" }}>
               <p className="muted" style={{ marginBottom: "1.5rem" }}>Tu carrito está vacío.</p>
               <Link href="/productos" className="btn">
@@ -80,47 +74,11 @@ export default function CarritoPage() {
             <div className="cart-layout">
               <div>
                 <div className="cart-head">
-                  <span className="cart-head-check">
-                    <label className="cart-card-checkbox-wrapper">
-                      <input
-                        type="checkbox"
-                        className="cart-card-checkbox-input"
-                        checked={allSelected}
-                        onChange={toggleSelectAll}
-                      />
-                      <span className="cart-card-checkbox-box" aria-hidden="true">
-                        <svg className="cart-card-checkbox-unchecked" viewBox="0 0 94 91" fill="none" width="22" height="22">
-                          <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" stroke="#7688F8" strokeWidth="10" />
-                        </svg>
-                        <svg className="cart-card-checkbox-checked" viewBox="0 0 94 91" fill="none" width="22" height="22">
-                          <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" fill="#7688F8" />
-                          <polyline points="30 45 42 57 64 33" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </label>
-                  </span>
-                  <span className="cart-head-select">Todos</span>
+                  <span className="cart-head-select">Todos los productos</span>
                 </div>
                 {cartItems.map((item) => (
                   <div key={item.product.slug} className="cart-card">
                     <div className="cart-card-media">
-                      <label className="cart-card-checkbox-wrapper">
-                        <input
-                          type="checkbox"
-                          className="cart-card-checkbox-input"
-                          checked={selected.has(item.product.slug)}
-                          onChange={() => toggleSelect(item.product.slug)}
-                        />
-                        <span className="cart-card-checkbox-box" aria-hidden="true">
-                          <svg className="cart-card-checkbox-unchecked" viewBox="0 0 94 91" fill="none" width="22" height="22">
-                            <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" stroke="#7688F8" strokeWidth="10" />
-                          </svg>
-                          <svg className="cart-card-checkbox-checked" viewBox="0 0 94 91" fill="none" width="22" height="22">
-                            <rect x="5" y="5" width="84" height="80.2169" rx="15.0482" fill="#7688F8" />
-                            <polyline points="30 45 42 57 64 33" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </span>
-                      </label>
                       <Image
                         src={item.product.image}
                         alt={item.product.name}
@@ -133,7 +91,7 @@ export default function CarritoPage() {
                       <div className="cart-card-top">
                         <div>
                           <p className="cart-card-name">{item.product.name}</p>
-                          <p className="cart-card-category">{item.product.category}</p>
+                          <p className="cart-card-category">{item.product.categoryName ?? item.product.category}</p>
                           <div className="cart-card-tags">
                             <span className="cart-card-tag">Color: Oro</span>
                             <span className="cart-card-tag">Cantidad: {item.qty}</span>
@@ -196,7 +154,7 @@ export default function CarritoPage() {
                   </div>
                   <div className="cart-summary-line">
                     <span className="muted">Impuestos</span>
-                    <span className="cart-summary-value">{formatCOP(tax)}</span>
+                    <span className="cart-summary-value">Incluidos</span>
                   </div>
                   <hr className="cart-summary-divider" />
                   <div className="cart-summary-total">
@@ -219,13 +177,13 @@ export default function CarritoPage() {
         <section className="section">
           <SectionTitle title="PRODUCTOS MÁS VENDIDOS" />
           <div className="grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-            {PRODUCTS.slice(0, 4).map((p) => (
+            {recommended.map((p) => (
               <Link key={p.slug} href={`/productos/${p.slug}`} className="card card-link" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
                 <div className="product-media" style={{ padding: 0, overflow: "hidden", position: "relative", width: "100%", aspectRatio: "1 / 1" }}>
                   <Image src={p.image} alt={p.name} fill sizes="(max-width: 720px) 100vw, 300px" style={{ objectFit: "cover" }} />
                 </div>
                 <h3 style={{ fontFamily: '"Days One", "Arial Black", sans-serif', fontWeight: 400, fontSize: "1.1rem", color: "#200332", margin: "0.75rem 0 0.5rem", lineHeight: 1.1 }}>{p.name}</h3>
-                <span className="tag" style={{ marginTop: "0.5rem" }}>{p.category}</span>
+                <span className="tag" style={{ marginTop: "0.5rem" }}>{p.categoryName ?? p.category}</span>
                 <p className="muted" style={{ margin: "0.5rem 0" }}>⭐ {p.rating} · {p.sold} vendidos</p>
                 <p style={{ fontFamily: '"Poppins", sans-serif', fontWeight: 600, fontSize: "1.2rem", color: "#200332", margin: "0.5rem 0 0" }}>{formatCOP(p.price)}</p>
               </Link>

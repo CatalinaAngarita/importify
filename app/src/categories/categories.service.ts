@@ -4,7 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { and, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { randomUUID } from "crypto";
+import { and, asc, count, desc, eq, like, or, type SQL } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
 import { categories } from "../database/schema";
@@ -24,7 +25,7 @@ export class CategoriesService {
     const filters: SQL[] = [];
     if (query.q) {
       const q = `%${query.q}%`;
-      filters.push(or(ilike(categories.name, q), ilike(categories.slug, q))!);
+      filters.push(or(like(categories.name, q), like(categories.slug, q))!);
     }
     if (query.isActive !== undefined) filters.push(eq(categories.isActive, query.isActive));
 
@@ -50,15 +51,16 @@ export class CategoriesService {
 
   async create(dto: CreateCategoryDto) {
     await this.assertSlugUnique(dto.slug);
-    const [row] = await this.db.insert(categories).values(dto).returning();
-    return row;
+    const id = randomUUID();
+    await this.db.insert(categories).values({ id, ...dto });
+    return this.findOne(id);
   }
 
   async update(id: string, dto: UpdateCategoryDto) {
     await this.findOne(id);
     if (dto.slug) await this.assertSlugUnique(dto.slug, id);
-    const [row] = await this.db.update(categories).set({ ...dto, updatedAt: new Date() }).where(eq(categories.id, id)).returning();
-    return row;
+    await this.db.update(categories).set({ ...dto, updatedAt: new Date() }).where(eq(categories.id, id));
+    return this.findOne(id);
   }
 
   async remove(id: string) {

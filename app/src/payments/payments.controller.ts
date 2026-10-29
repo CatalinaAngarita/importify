@@ -37,6 +37,11 @@ export class PaymentsController {
     return this.payments.findByOrder(orderId);
   }
 
+  @Get("wompi-status/:transactionId")
+  wompiStatus(@Param("transactionId") transactionId: string) {
+    return this.payments.syncByWompiTransactionId(transactionId);
+  }
+
   /** Webhook Wompi (evento transaction.updated). Configurar URL en el dashboard. */
   @Throttle(120)
   @Post("webhook")
