@@ -4,10 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { and, eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
-import { cartItems, carts, products } from "../database/schema";
+import { cartItems, carts, categories, productImages, products } from "../database/schema";
 import { AddItemDto, CreateCartDto } from "./dto/cart.dto";
 
 type Db = ReturnType<typeof getDb>;
@@ -26,11 +27,9 @@ export class CartService {
         .limit(1);
       if (existing) return this.get(existing.id);
     }
-    const [row] = await this.db
-      .insert(carts)
-      .values({ userId: dto.userId })
-      .returning();
-    return this.get(row.id);
+    const id = randomUUID();
+    await this.db.insert(carts).values({ id, userId: dto.userId });
+    return this.get(id);
   }
 
   /** Consulta el carrito con ítems, precios backend y totales. */
@@ -53,9 +52,21 @@ export class CartService {
         productSku: products.sku,
         productStock: products.stock,
         productActive: products.isActive,
+        productCompareAtPrice: products.compareAtPrice,
+        productCategorySlug: categories.slug,
+        productImage: productImages.processedImage,
+        productImageOriginal: productImages.image,
       })
       .from(cartItems)
       .innerJoin(products, eq(cartItems.productId, products.id))
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(
+        productImages,
+        and(
+          eq(productImages.productId, products.id),
+          eq(productImages.isPrimary, true),
+        ),
+      )
       .where(eq(cartItems.cartId, cartId));
 
     const detailed = items.map((i) => ({

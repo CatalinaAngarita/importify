@@ -20,4 +20,53 @@ export const adminProducts = {
   toggleActive: (id: string, isActive: boolean) =>
     apiPatch<ApiProduct>(`/products/${id}`, { isActive }, true),
   remove: (id: string) => apiDelete<{ deleted: boolean }>(`/products/${id}`, true),
+  // Imágenes
+  uploadImage: (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiPost<{ 
+      id: string; 
+      productId: string; 
+      image: string; 
+      processedImage: string | null; 
+      altText: string | null; 
+      isPrimary: boolean; 
+      processingStatus: string;
+      processingError: string | null;
+    }>(
+      `/products/${id}/images`,
+      formData,
+      true,
+    );
+  },
+  getImages: (id: string) =>
+    apiGet<Array<{ 
+      id: string; 
+      productId: string; 
+      image: string; 
+      processedImage: string | null; 
+      altText: string | null; 
+      isPrimary: boolean; 
+      processingStatus: string;
+      processingError: string | null;
+    }>>(
+      `/products/${id}/images`,
+    ),
+  removeImage: (id: string, imageId: string) =>
+    apiDelete<{ deleted: boolean; id: string }>(`/products/${id}/images/${imageId}`, true),
+  setPrimaryImage: (id: string, imageId: string) =>
+    apiPatch<{ 
+      id: string; 
+      productId: string; 
+      image: string; 
+      processedImage: string | null; 
+      altText: string | null; 
+      isPrimary: boolean; 
+      processingStatus: string;
+      processingError: string | null;
+    }>(
+      `/products/${id}/images/${imageId}/primary`,
+      {},
+      true,
+    ),
 };

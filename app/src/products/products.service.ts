@@ -5,6 +5,7 @@ import {
   NotFoundException,
   forwardRef,
 } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import {
   and,
   asc,
@@ -12,20 +13,19 @@ import {
   desc,
   eq,
   gte,
-  ilike,
+  like,
   lte,
   or,
   type SQL,
 } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
-import { categories, products } from "../database/schema";
+import { categories, products, productImages } from "../database/schema";
 import { InventoryService } from "../inventory/inventory.service";
 import { paginated } from "../common/dto/pagination.dto";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { ProductQueryDto } from "./dto/product-query.dto";
-
 type Db = ReturnType<typeof getDb>;
 
 const SORTABLE = {
@@ -49,9 +49,9 @@ export class ProductsService {
       const q = `%${query.q}%`;
       filters.push(
         or(
-          ilike(products.name, q),
-          ilike(products.sku, q),
-          ilike(products.slug, q),
+          like(products.name, q),
+          like(products.sku, q),
+          like(products.slug, q),
         )!,
       );
     }
@@ -100,9 +100,18 @@ export class ProductsService {
           isBestSeller: products.isBestSeller,
           createdAt: products.createdAt,
           updatedAt: products.updatedAt,
+          primaryImage: productImages.processedImage,
+          primaryImageOriginal: productImages.image,
         })
         .from(products)
         .leftJoin(categories, eq(products.categoryId, categories.id))
+        .leftJoin(
+          productImages,
+          and(
+            eq(productImages.productId, products.id),
+            eq(productImages.isPrimary, true),
+          ),
+        )
         .where(finalWhere ?? where)
         .orderBy(orderBy)
         .limit(query.limit)
@@ -113,13 +122,75 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    const [row] = await this.db.select().from(products).where(eq(products.id, id)).limit(1);
+    const [row] = await this.db
+      .select({
+        id: products.id,
+        sku: products.sku,
+        name: products.name,
+        slug: products.slug,
+        shortDescription: products.shortDescription,
+        price: products.price,
+        compareAtPrice: products.compareAtPrice,
+        stock: products.stock,
+        categoryId: products.categoryId,
+        categoryName: categories.name,
+        categorySlug: categories.slug,
+        isActive: products.isActive,
+        isFeatured: products.isFeatured,
+        isBestSeller: products.isBestSeller,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        primaryImage: productImages.processedImage,
+        primaryImageOriginal: productImages.image,
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(
+        productImages,
+        and(
+          eq(productImages.productId, products.id),
+          eq(productImages.isPrimary, true),
+        ),
+      )
+      .where(eq(products.id, id))
+      .limit(1);
     if (!row) throw new NotFoundException(`Producto ${id} no encontrado`);
     return row;
   }
 
   async findBySlug(slug: string) {
-    const [row] = await this.db.select().from(products).where(eq(products.slug, slug)).limit(1);
+    const [row] = await this.db
+      .select({
+        id: products.id,
+        sku: products.sku,
+        name: products.name,
+        slug: products.slug,
+        shortDescription: products.shortDescription,
+        price: products.price,
+        compareAtPrice: products.compareAtPrice,
+        stock: products.stock,
+        categoryId: products.categoryId,
+        categoryName: categories.name,
+        categorySlug: categories.slug,
+        isActive: products.isActive,
+        isFeatured: products.isFeatured,
+        isBestSeller: products.isBestSeller,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        primaryImage: productImages.processedImage,
+        primaryImageOriginal: productImages.image,
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(
+        productImages,
+        and(
+          eq(productImages.productId, products.id),
+          eq(productImages.isPrimary, true),
+        ),
+      )
+      .where(eq(products.slug, slug))
+      .limit(1);
     if (!row) throw new NotFoundException(`Producto '${slug}' no encontrado`);
     return row;
   }
@@ -128,10 +199,11 @@ export class ProductsService {
     await this.assertSkuUnique(dto.sku);
     await this.assertSlugUnique(dto.slug);
     if (dto.categoryId) await this.assertCategoryExists(dto.categoryId);
-    const [row] = await this.db
+    const id = randomUUID();
+    await this.db
       .insert(products)
-      .values({ ...dto, price: String(dto.price), compareAtPrice: dto.compareAtPrice !== undefined ? String(dto.compareAtPrice) : undefined })
-      .returning();
+      .values({ id, ...dto, price: String(dto.price), compareAtPrice: dto.compareAtPrice !== undefined ? String(dto.compareAtPrice) : undefined });
+    const [row] = await this.db.select().from(products).where(eq(products.id, id)).limit(1);
     return row;
   }
 
@@ -147,7 +219,7 @@ export class ProductsService {
       });
       const { stock: _ignored, ...rest } = dto;
       if (Object.keys(rest).length === 0) return product;
-      const [row] = await this.db
+      await this.db
         .update(products)
         .set({
           ...rest,
@@ -155,11 +227,11 @@ export class ProductsService {
           compareAtPrice: rest.compareAtPrice !== undefined ? String(rest.compareAtPrice) : undefined,
           updatedAt: new Date(),
         })
-        .where(eq(products.id, id))
-        .returning();
+        .where(eq(products.id, id));
+      const [row] = await this.db.select().from(products).where(eq(products.id, id)).limit(1);
       return row;
     }
-    const [row] = await this.db
+    await this.db
       .update(products)
       .set({
         ...dto,
@@ -167,8 +239,8 @@ export class ProductsService {
         compareAtPrice: dto.compareAtPrice !== undefined ? String(dto.compareAtPrice) : undefined,
         updatedAt: new Date(),
       })
-      .where(eq(products.id, id))
-      .returning();
+      .where(eq(products.id, id));
+    const [row] = await this.db.select().from(products).where(eq(products.id, id)).limit(1);
     return row;
   }
 
@@ -176,6 +248,91 @@ export class ProductsService {
     await this.findOne(id);
     await this.db.delete(products).where(eq(products.id, id));
     return { deleted: true, id };
+  }
+
+  async addImage(productId: string, imageUrl: string, altText?: string, isPrimary = false) {
+    await this.findOne(productId);
+    if (isPrimary) {
+      await this.db
+        .update(productImages)
+        .set({ isPrimary: false })
+        .where(eq(productImages.productId, productId));
+    }
+    const id = randomUUID();
+    await this.db
+      .insert(productImages)
+      .values({ id, productId, image: imageUrl, altText, isPrimary, processingStatus: "pending" });
+    const [row] = await this.db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.id, id))
+      .limit(1);
+
+    await this.db
+      .update(productImages)
+      .set({ processingStatus: "completed", processedImage: imageUrl, updatedAt: new Date() })
+      .where(eq(productImages.id, row.id));
+
+    return row;
+  }
+
+  private async processBackgroundRemoval(imageId: string, imageUrl: string) {
+    try {
+      await this.db
+        .update(productImages)
+        .set({
+          processedImage: imageUrl,
+          processingStatus: "completed",
+          updatedAt: new Date(),
+        })
+        .where(eq(productImages.id, imageId));
+    } catch (error) {
+      await this.db
+        .update(productImages)
+        .set({
+          processingStatus: "failed",
+          processingError: error instanceof Error ? error.message : "Error desconocido",
+          updatedAt: new Date(),
+        })
+        .where(eq(productImages.id, imageId));
+    }
+  }
+
+  async getImages(productId: string) {
+    await this.findOne(productId);
+    return this.db
+      .select()
+      .from(productImages)
+      .where(eq(productImages.productId, productId))
+      .orderBy(productImages.isPrimary, productImages.id);
+  }
+
+  async removeImage(productId: string, imageId: string) {
+    await this.findOne(productId);
+    const [result] = await this.db
+      .delete(productImages)
+      .where(and(eq(productImages.id, imageId), eq(productImages.productId, productId)));
+    if (result.affectedRows === 0) throw new NotFoundException(`Imagen ${imageId} no encontrada`);
+    return { deleted: true, id: imageId };
+  }
+
+  async setPrimaryImage(productId: string, imageId: string) {
+    await this.findOne(productId);
+    await this.db
+      .update(productImages)
+      .set({ isPrimary: false })
+      .where(eq(productImages.productId, productId));
+    await this.db
+      .update(productImages)
+      .set({ isPrimary: true })
+      .where(and(eq(productImages.id, imageId), eq(productImages.productId, productId)));
+    const [row] = await this.db
+      .select()
+      .from(productImages)
+      .where(and(eq(productImages.id, imageId), eq(productImages.productId, productId)))
+      .limit(1);
+    if (!row) throw new NotFoundException(`Imagen ${imageId} no encontrada`);
+    return row;
   }
 
   private async assertSkuUnique(sku: string, exceptId?: string) {

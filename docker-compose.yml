@@ -1,21 +1,23 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: mariadb:11.4
     container_name: importify-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-importify}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-importify}
-      POSTGRES_DB: ${POSTGRES_DB:-importify}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MARIADB_USER: ${MYSQL_USER:-importify}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD:-importify}
+      MARIADB_DATABASE: ${MYSQL_DATABASE:-importify}
+      TZ: UTC
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mariadbdata:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-importify}"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
     networks:
       - importify-net
 
@@ -28,8 +30,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-importify}:${POSTGRES_PASSWORD:-importify}@db:5432/${POSTGRES_DB:-importify}
+      DATABASE_URL: mysql://${MYSQL_USER:-importify}:${MYSQL_PASSWORD:-importify}@db:3306/${MYSQL_DATABASE:-importify}
       APP_PORT: ${APP_PORT:-3001}
+      RUN_MIGRATIONS_ON_START: "false"
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-your-local-env}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
@@ -39,6 +42,11 @@ services:
       WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
       WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-}
       WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     ports:
       - "${APP_PORT:-3001}:3001"
     healthcheck:
@@ -74,7 +82,7 @@ services:
       - importify-net
 
 volumes:
-  pgdata:
+  mariadbdata:
 
 networks:
   importify-net:

@@ -16,7 +16,7 @@ import { AdjustStockDto } from "./dto/adjust-stock.dto";
 import { InventoryQueryDto } from "./dto/inventory-query.dto";
 
 @UseGuards(RolesGuard)
-@Roles("ADMIN")
+@Roles("ADMIN", "SUPERADMIN")
 @Controller("inventory")
 export class InventoryController {
   constructor(private readonly inventory: InventoryService) {}

@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CART_COUNT } from "@/services/catalog.mock";
+import { useCart } from "@/context/CartContext";
 
 const LINKS = [
   { href: "/", label: "Inicio" },
@@ -15,15 +16,12 @@ const LINKS = [
 export function Header() {
   const [query, setQuery] = useState("");
   const pathname = usePathname();
-
+  const { count } = useCart();
   return (
     <header className="header">
       <div className="header-inner">
-        <Link href="/" className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <span />
-          </span>
-          <span className="brand-name">IMPORTIFY</span>
+        <Link href="/" className="brand" aria-label="Importify - inicio">
+          <Image className="brand-logo" src="/images/brand/logo-superior.svg" alt="Importify" width={600} height={120} priority />
         </Link>
         <form
           className="search"
@@ -32,7 +30,7 @@ export function Header() {
             if (!query.trim()) e.preventDefault();
           }}
         >
-          <span className="search-icon" aria-hidden="true" />
+          <Image className="search-bg" src="/images/brand/barra-busqueda-lupa.svg" alt="" aria-hidden="true" fill priority />
           <input name="q" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Escribe el producto..." aria-label="Buscar productos" />
         </form>
         <nav className="nav">
@@ -41,12 +39,20 @@ export function Header() {
               {l.label}
             </Link>
           ))}
-          <Link href="/login" className="login-link">Iniciar sesión</Link>
+          {!pathname.startsWith("/admin") && <Link href="/login" className="login-link">Iniciar sesión</Link>}
         </nav>
         <Link href="/carrito" className="cart-link" aria-label="Carrito">
-          <span className="cart-icon" aria-hidden="true" />
-          <span className="cart-count">{CART_COUNT}</span>
+          <Image
+            className="cart-icon-img"
+            src="/images/brand/cart-icon.svg"
+            alt="Carrito"
+            width={44}
+            height={41}
+            priority
+          />
+          <span className="cart-count">{count}</span>
         </Link>
+        
       </div>
     </header>
   );

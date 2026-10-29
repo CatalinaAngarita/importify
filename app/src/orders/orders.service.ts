@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { and, count, desc, eq, type SQL } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
@@ -111,9 +112,11 @@ export class OrdersService {
       const total = Math.round((subtotal - discount + shippingCost) * 100) / 100;
 
       const orderNumber = `IMP-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-      const [order] = await tx
+      const orderId = randomUUID();
+      await tx
         .insert(orders)
         .values({
+          id: orderId,
           orderNumber,
           userId: dto.userId,
           status: "PENDING",
@@ -123,8 +126,8 @@ export class OrdersService {
           total: String(total),
           paymentStatus: "PENDING",
           shippingAddress: dto.shippingAddress as never,
-        })
-        .returning();
+        });
+      const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1);
 
       await tx.insert(orderItems).values(
         snapshots.map((s) => ({

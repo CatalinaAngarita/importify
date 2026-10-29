@@ -18,6 +18,7 @@ export interface ApiProduct {
   sku: string;
   name: string;
   slug: string;
+  shortDescription?: string | null;
   price: string;
   compareAtPrice?: string | null;
   stock: number;
@@ -27,6 +28,8 @@ export interface ApiProduct {
   isActive: boolean;
   isFeatured: boolean;
   isBestSeller: boolean;
+  primaryImage?: string | null;
+  primaryImageOriginal?: string | null;
 }
 
 export interface ApiCartItem {
@@ -37,6 +40,12 @@ export interface ApiCartItem {
   productName: string;
   productSlug: string;
   productSku: string;
+  productStock?: number;
+  productActive?: boolean;
+  productCompareAtPrice?: string | null;
+  productCategorySlug?: string | null;
+  productImage?: string | null;
+  productImageOriginal?: string | null;
   subtotal: number;
 }
 

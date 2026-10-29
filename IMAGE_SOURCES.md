@@ -45,4 +45,20 @@ y eliminar el placeholder `.svg` correspondiente. Nombres en minúsculas con gui
 | Avatar Andrés R. | andres-r.webp | appweb/public/images/testimonials/andres-r.webp |
 | Avatar Valentina T. | valentina-t.webp | appweb/public/images/testimonials/valentina-t.webp |
 
+## Nosotros (Quiénes somos)
+
+| Uso | Nombre recomendado | Ruta final |
+| --- | ------------------ | ---------- |
+| Asesora hero (persona con paquetes, fondo transparente PNG) | importify-about-hero.png | appweb/public/images/about/importify-about-hero.png |
+| Foto clienta del badge circular junto a "+90" | cliente-satisfecha.png | appweb/public/images/about/cliente-satisfecha.png |
+| Foto bodega/almacén (tarjeta ¿Por qué elegirnos?) | bodega-importify.png | appweb/public/images/about/bodega-importify.png |
+| Ilustración globo/avión/cajas (tarjeta "Somos tu aliado") | aliado-importify.png | appweb/public/images/about/aliado-importify.png |
+
+## Autenticación (Login / Registro)
+
+| Uso | Nombre recomendado | Ruta final |
+| --- | ------------------ | ---------- |
+| Foto login (mujer con paquetes, fondo transparente PNG) | login-foto.png | appweb/public/images/auth/login-foto.png |
+| Foto registro (hombre con computador, fondo transparente PNG) | registro-foto.png | appweb/public/images/auth/registro-foto.png |
+
 > Alternativas de bancos libres: https://www.pexels.com — https://unsplash.com/license

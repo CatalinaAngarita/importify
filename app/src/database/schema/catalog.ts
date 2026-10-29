@@ -1,49 +1,48 @@
 import {
   boolean,
+  decimal,
   index,
-  integer,
-  numeric,
-  pgTable,
+  int,
+  mysqlTable,
   text,
-  timestamp,
   uniqueIndex,
-  uuid,
   varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
+import { timestampCol, uuidCol, uuidPk } from "./columns";
 
-export const categories = pgTable(
+export const categories = mysqlTable(
   "categories",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuidPk(),
     name: varchar("name", { length: 120 }).notNull(),
-    slug: varchar("slug", { length: 140 }).notNull().unique(),
+    slug: varchar("slug", { length: 140 }).notNull(),
     description: text("description"),
     image: text("image"),
     isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [uniqueIndex("categories_slug_uidx").on(t.slug)],
 );
 
-export const products = pgTable(
+export const products = mysqlTable(
   "products",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    sku: varchar("sku", { length: 60 }).notNull().unique(),
+    id: uuidPk(),
+    sku: varchar("sku", { length: 60 }).notNull(),
     name: varchar("name", { length: 200 }).notNull(),
-    slug: varchar("slug", { length: 220 }).notNull().unique(),
+    slug: varchar("slug", { length: 220 }).notNull(),
     description: text("description"),
     shortDescription: varchar("short_description", { length: 300 }),
-    price: numeric("price", { precision: 12, scale: 2 }).notNull(),
-    compareAtPrice: numeric("compare_at_price", { precision: 12, scale: 2 }),
-    stock: integer("stock").notNull().default(0),
-    categoryId: uuid("category_id").references(() => categories.id),
+    price: decimal("price", { precision: 12, scale: 2 }).notNull(),
+    compareAtPrice: decimal("compare_at_price", { precision: 12, scale: 2 }),
+    stock: int("stock").notNull().default(0),
+    categoryId: uuidCol("category_id").references(() => categories.id),
     isActive: boolean("is_active").notNull().default(true),
     isFeatured: boolean("is_featured").notNull().default(false),
     isBestSeller: boolean("is_best_seller").notNull().default(false),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     uniqueIndex("products_sku_uidx").on(t.sku),
@@ -54,19 +53,27 @@ export const products = pgTable(
   ],
 );
 
-export const productImages = pgTable(
+export const productImages = mysqlTable(
   "product_images",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    productId: uuid("product_id")
+    id: uuidPk(),
+    productId: uuidCol("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
     image: text("image").notNull(),
+    processedImage: text("processed_image"),
     altText: varchar("alt_text", { length: 200 }),
     isPrimary: boolean("is_primary").notNull().default(false),
+    processingStatus: varchar("processing_status", { length: 20 })
+      .notNull()
+      .default("pending"),
+    processingError: text("processing_error"),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     index("product_images_product_idx").on(t.productId),
     index("product_images_primary_idx").on(t.productId, t.isPrimary),
+    index("product_images_status_idx").on(t.processingStatus),
   ],
 );

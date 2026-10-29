@@ -1,6 +1,26 @@
 import { apiGet, apiPost, setToken } from "./api";
 import type { AuthTokens } from "@/types/api";
 
+export interface SendOtpResponse {
+  success: boolean;
+  message: string;
+  expiresIn?: number;
+  /** Solo en modo demo (sin SMTP configurado en el backend). */
+  code?: string;
+}
+
+export interface VerifyOtpResponse extends AuthTokens {
+  user?: {
+    id: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    roleName?: string;
+    role?: string;
+    isActive: boolean;
+  };
+}
+
 export const authService = {
   async register(data: { email: string; password: string; firstName?: string; lastName?: string }) {
     const res = await apiPost<AuthTokens>("/auth/register", data);
@@ -12,6 +32,17 @@ export const authService = {
   },
   async login(data: { email: string; password: string }) {
     const res = await apiPost<AuthTokens>("/auth/login", data);
+    if (res.accessToken) setToken(res.accessToken);
+    if (typeof window !== "undefined" && res.refreshToken) {
+      window.localStorage.setItem("importify_refresh_token", res.refreshToken);
+    }
+    return res;
+  },
+  async sendOtp(email: string): Promise<SendOtpResponse> {
+    return apiPost<SendOtpResponse>("/auth/send-otp", { email });
+  },
+  async verifyOtp(email: string, code: string): Promise<VerifyOtpResponse> {
+    const res = await apiPost<VerifyOtpResponse>("/auth/verify-otp", { email, code });
     if (res.accessToken) setToken(res.accessToken);
     if (typeof window !== "undefined" && res.refreshToken) {
       window.localStorage.setItem("importify_refresh_token", res.refreshToken);

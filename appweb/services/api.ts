@@ -31,7 +31,8 @@ interface Options extends RequestInit {
 
 async function request<T>(path: string, options: Options = {}): Promise<T> {
   const { auth, ...init } = options;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+  const headers: Record<string, string> = isFormData ? {} : { "Content-Type": "application/json" };
   if (init.headers) {
     const h = new Headers(init.headers);
     h.forEach((v, k) => {
@@ -61,7 +62,11 @@ async function request<T>(path: string, options: Options = {}): Promise<T> {
 export const apiGet = <T>(path: string, auth = false) => request<T>(path, { auth });
 
 export const apiPost = <T>(path: string, data?: unknown, auth = false) =>
-  request<T>(path, { method: "POST", body: JSON.stringify(data ?? {}), auth });
+  request<T>(path, {
+    method: "POST",
+    body: data instanceof FormData ? data : JSON.stringify(data ?? {}),
+    auth,
+  });
 
 export const apiPatch = <T>(path: string, data?: unknown, auth = false) =>
   request<T>(path, { method: "PATCH", body: JSON.stringify(data ?? {}), auth });

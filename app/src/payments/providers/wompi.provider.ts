@@ -10,7 +10,7 @@ import type {
 
 /**
  * Implementación Wompi Colombia según docs.wompi.co (docs Colombia):
- * - Base: sandbox https://sandbox.wompi.co/v1 | prod https://api.wompi.co/v1
+ * - Base: sandbox https://sandbox.wompi.co/v1 | prod https://production.wompi.co/v1
  * - GET /merchants/{public_key} (público) → presigned_acceptance + personal_data_auth
  * - Firma de integridad: SHA256hex(reference + amount_in_cents + currency + integrity_secret)
  * - POST /transactions (Bearer llave privada): acceptance_token, amount_in_cents,
@@ -29,7 +29,7 @@ export class WompiProvider implements PaymentProvider {
     const env = (this.config.get<string>("WOMPI_ENV") ?? "sandbox").toLowerCase();
     this.baseUrl =
       this.config.get<string>("WOMPI_BASE_URL") ??
-      (env === "production" ? "https://api.wompi.co/v1" : "https://sandbox.wompi.co/v1");
+      (env === "production" ? "https://production.wompi.co/v1" : "https://sandbox.wompi.co/v1");
     this.publicKey = this.config.get<string>("WOMPI_PUBLIC_KEY") ?? "";
     this.privateKey = this.config.get<string>("WOMPI_PRIVATE_KEY") ?? "";
     this.integritySecret = this.config.get<string>("WOMPI_INTEGRITY_SECRET") ?? "";

@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { desc, eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
@@ -71,9 +71,11 @@ export class PaymentsService {
     const tokens = await this.provider.getAcceptanceTokens();
     const signature = this.provider.buildIntegritySignature({ reference, amountInCents, currency });
 
-    const [payment] = await this.db
+    const paymentId = randomUUID();
+    await this.db
       .insert(payments)
       .values({
+        id: paymentId,
         orderId: order.id,
         reference,
         amountCents: amountInCents,
@@ -81,8 +83,8 @@ export class PaymentsService {
         status: "PENDING",
         customerEmail: dto.customerEmail,
         paymentMethodType: typeof dto.paymentMethod?.["type"] === "string" ? (dto.paymentMethod["type"] as string) : undefined,
-      })
-      .returning();
+      });
+    const [payment] = await this.db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
 
     // Sin método aún: appweb completa con Widget usando estos datos.
     if (!dto.paymentMethod) {
@@ -103,19 +105,17 @@ export class PaymentsService {
       sessionId: dto.sessionId,
     });
 
-    const [updated] = await this.db
+    await this.db
       .update(payments)
       .set({
-        status: tx.status as WompiTransactionStatus,
         wompiTransactionId: tx.id,
         paymentMethodType: tx.paymentMethodType ?? undefined,
         rawResponse: tx.raw as never,
         updatedAt: new Date(),
       })
-      .where(eq(payments.id, payment.id))
-      .returning();
+      .where(eq(payments.id, payment.id));
+    const [updated] = await this.db.select().from(payments).where(eq(payments.id, payment.id)).limit(1);
 
-    // Si Wompi ya devolvió estado final sincrónico, aplicarlo.
     await this.applyProviderStatus(updated.id, tx.status);
     return { payment: updated, wompiTransaction: tx };
   }
@@ -135,6 +135,28 @@ export class PaymentsService {
 
   async findByOrder(orderId: string) {
     return this.db.select().from(payments).where(eq(payments.orderId, orderId)).orderBy(desc(payments.createdAt));
+  }
+
+  async syncByWompiTransactionId(transactionId: string) {
+    const tx = await this.provider.getTransaction(transactionId);
+    if (!tx.reference) {
+      throw new NotFoundException(`Transacción Wompi ${transactionId} sin referencia`);
+    }
+
+    const [payment] = await this.db.select().from(payments).where(eq(payments.reference, tx.reference)).limit(1);
+    if (!payment) {
+      throw new NotFoundException(`Pago no encontrado para la transacción ${transactionId}`);
+    }
+
+    await this.applyProviderStatus(payment.id, tx.status, tx);
+
+    const [refreshed] = await this.db.select().from(payments).where(eq(payments.id, payment.id)).limit(1);
+    const [order] = await this.db.select().from(orders).where(eq(orders.id, refreshed.orderId)).limit(1);
+    if (!order) {
+      throw new NotFoundException(`Pedido no encontrado para el pago ${payment.id}`);
+    }
+
+    return { payment: refreshed, order, wompiTransaction: tx };
   }
 
   /**

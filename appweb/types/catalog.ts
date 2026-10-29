@@ -2,10 +2,20 @@ export type CategorySlug =
   | "technology"
   | "automotive"
   | "accessories"
-  | "personal-care";
+  | "personal-care"
+  | "perfumeria"
+  | "televentas"
+  | "sokany"
+  | "belleza"
+  | "tecnologia"
+  | "electricos"
+  | "repuestos-electricos"
+  | "jugueteria"
+  | "herramientas"
+  | "mascotas";
 
 export interface Category {
-  slug: CategorySlug;
+  slug: string;
   name: string;
   emoji: string;
   blurb: string;
@@ -13,15 +23,24 @@ export interface Category {
 }
 
 export interface Product {
+  id?: string;
+  sku?: string;
+  stock?: number;
   slug: string;
   name: string;
-  category: CategorySlug;
+  description?: string;
+  category: string;
+  categoryName?: string;
   price: number;
   oldPrice?: number;
   emoji: string;
   image: string;
+  primaryImage?: string | null;
+  primaryImageOriginal?: string | null;
   rating: number;
   sold: number;
+  isFeatured?: boolean;
+  isBestSeller?: boolean;
 }
 
 export interface Testimonial {

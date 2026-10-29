@@ -1,45 +1,47 @@
 import {
   index,
-  integer,
-  jsonb,
-  pgEnum,
-  pgTable,
+  int,
+  mysqlEnum,
+  mysqlTable,
   text,
-  timestamp,
   uniqueIndex,
-  uuid,
   varchar,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/mysql-core";
+import { jsonCol, timestampCol, uuidCol, uuidPk } from "./columns";
 import { orders } from "./order";
 
 // Estados finales documentados por Wompi para una transacción:
 // PENDING (recién creada) → APPROVED | DECLINED | VOIDED | ERROR.
-export const wompiTransactionStatusEnum = pgEnum("wompi_transaction_status", [
+const wompiTransactionStatuses = [
   "PENDING",
   "APPROVED",
   "DECLINED",
   "VOIDED",
   "ERROR",
-]);
+] as const;
 
-export const payments = pgTable(
+export type WompiTransactionStatus = (typeof wompiTransactionStatuses)[number];
+
+export const payments = mysqlTable(
   "payments",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orderId: uuid("order_id")
+    id: uuidPk(),
+    orderId: uuidCol("order_id")
       .notNull()
       .references(() => orders.id, { onDelete: "cascade" }),
     // Referencia única propia enviada a Wompi (reference).
-    reference: varchar("reference", { length: 255 }).notNull().unique(),
-    amountCents: integer("amount_cents").notNull(),
+    reference: varchar("reference", { length: 255 }).notNull(),
+    amountCents: int("amount_cents").notNull(),
     currency: varchar("currency", { length: 3 }).notNull().default("COP"),
-    status: wompiTransactionStatusEnum("status").notNull().default("PENDING"),
+    status: mysqlEnum("status", [...wompiTransactionStatuses])
+      .notNull()
+      .default("PENDING"),
     wompiTransactionId: varchar("wompi_transaction_id", { length: 60 }),
     customerEmail: varchar("customer_email", { length: 255 }),
     paymentMethodType: varchar("payment_method_type", { length: 30 }),
-    rawResponse: jsonb("raw_response"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    rawResponse: jsonCol("raw_response"),
+    createdAt: timestampCol("created_at"),
+    updatedAt: timestampCol("updated_at"),
   },
   (t) => [
     uniqueIndex("payments_reference_uidx").on(t.reference),
@@ -47,6 +49,3 @@ export const payments = pgTable(
     index("payments_wompi_tx_idx").on(t.wompiTransactionId),
   ],
 );
-
-export type WompiTransactionStatus =
-  (typeof wompiTransactionStatusEnum.enumValues)[number];

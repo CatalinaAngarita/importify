@@ -5,7 +5,7 @@ import { UsersService } from "./users.service";
 import { PaginationQueryDto } from "../common/dto/pagination.dto";
 
 @UseGuards(RolesGuard)
-@Roles("ADMIN")
+@Roles("ADMIN", "SUPERADMIN")
 @Controller("users")
 export class UsersController {
   constructor(private readonly users: UsersService) {}

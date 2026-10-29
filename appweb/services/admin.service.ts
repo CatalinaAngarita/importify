@@ -9,6 +9,10 @@ export const adminService = {
       lowStockThreshold: number;
       lowStock: { id: string; name: string; sku: string; stock: number }[];
       outOfStock: number;
+      totalProducts: number;
+      inStock: number;
+      lowStockCount: number;
+      activeProducts: number;
     }>("/admin/stats", true);
   },
   customers(params: Record<string, string | number> = {}) {

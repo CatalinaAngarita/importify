@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, Inject, NotFoundException } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import { and, count, desc, eq, type SQL } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { getDb } from "../database/db";
@@ -89,7 +90,7 @@ export class InventoryService {
     movementType: InventoryMovementType,
     input: StockChangeInput,
   ) {
-    // Transacción PostgreSQL: lectura, validación, update e inserción atómicas.
+    // Transacción MySQL: lectura, validación, update e inserción atómicas.
     return this.db.transaction(async (tx) => {
       const [product] = await tx
         .select()
@@ -106,15 +107,21 @@ export class InventoryService {
         );
       }
 
-      const [updated] = await tx
+      await tx
         .update(products)
         .set({ stock: newStock, updatedAt: new Date() })
+        .where(eq(products.id, productId));
+      const [updated] = await tx
+        .select()
+        .from(products)
         .where(eq(products.id, productId))
-        .returning();
+        .limit(1);
 
-      const [movement] = await tx
+      const movementId = randomUUID();
+      await tx
         .insert(inventoryMovements)
         .values({
+          id: movementId,
           productId,
           movementType,
           quantity: delta,
@@ -123,8 +130,12 @@ export class InventoryService {
           reason: input.reason,
           reference: input.reference,
           createdBy: input.createdBy,
-        })
-        .returning();
+        });
+      const [movement] = await tx
+        .select()
+        .from(inventoryMovements)
+        .where(eq(inventoryMovements.id, movementId))
+        .limit(1);
 
       return { product: updated, movement };
     });

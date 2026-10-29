@@ -4,7 +4,7 @@ import { RolesGuard } from "../auth/roles.guard";
 import { AdminService } from "./admin.service";
 
 @UseGuards(RolesGuard)
-@Roles("ADMIN")
+@Roles("ADMIN", "SUPERADMIN")
 @Controller("admin")
 export class AdminController {
   constructor(private readonly admin: AdminService) {}
