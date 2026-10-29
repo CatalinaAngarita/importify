@@ -1,0 +1,20 @@
+{
+  "connections": {
+    "importify-local": {
+      "provider": "mysql",
+      "driver": "mysql8",
+      "name": "importify-local",
+      "save-password": true,
+      "host": "localhost",
+      "port": "3306",
+      "database": "importify",
+      "user": "importify",
+      "password": "importify",
+      "url": "jdbc:mysql://localhost:3306/importify",
+      "settings": {
+        "showSystemObjects": false,
+        "showUtilityObjects": false
+      }
+    }
+  }
+}
